@@ -12,13 +12,15 @@ open class User(
     @Column(nullable = false, length = 120)
     var name: String = "",
 
-    @Column(nullable = false, length = 180)
+    @Column(nullable = false, length = 180, unique = true)
     var email: String = "",
+
+    @Column(nullable = false)
+    var password: String = "",
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     var role: Role = Role.ADMIN
 ) {
-    // 👇 Constructor vacío requerido por JPA
-    protected constructor() : this(null, "", "", Role.ADMIN)
+    protected constructor() : this(null, "", "", "", Role.ADMIN)
 }
