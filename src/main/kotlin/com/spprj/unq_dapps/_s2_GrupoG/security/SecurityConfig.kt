@@ -8,10 +8,12 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
 @Configuration
 class SecurityConfig(
-    private val customUserDetailsService: CustomUserDetailsService
+    private val customUserDetailsService: CustomUserDetailsService,
+    private val jwtAuthEntryPoint: JwtAuthEntryPoint
 ) {
 
     @Bean
@@ -25,11 +27,18 @@ class SecurityConfig(
     fun filterChain(http: HttpSecurity, jwtAuthFilter: JwtAuthFilter): SecurityFilterChain {
         http
             .csrf { it.disable() }
+            .exceptionHandling { it.authenticationEntryPoint(jwtAuthEntryPoint) }
             .authorizeHttpRequests {
-                it.requestMatchers("/auth/**").permitAll()
-                it.anyRequest().authenticated()
+                it
+                    .requestMatchers("/auth/**").permitAll()
+                    .requestMatchers(
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html"
+                    ).permitAll()
+                    .anyRequest().authenticated()
             }
-            .addFilterBefore(jwtAuthFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
 
         return http.build()
     }
