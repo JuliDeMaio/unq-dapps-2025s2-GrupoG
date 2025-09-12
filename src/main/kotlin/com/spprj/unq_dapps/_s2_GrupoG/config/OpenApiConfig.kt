@@ -1,4 +1,4 @@
-package com.spprj.unq_dapps._s2_GrupoG.security
+package com.spprj.unq_dapps._s2_GrupoG.config
 
 import io.swagger.v3.oas.models.Components
 import io.swagger.v3.oas.models.OpenAPI

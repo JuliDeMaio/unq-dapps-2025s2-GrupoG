@@ -2,7 +2,7 @@ package com.spprj.unq_dapps._s2_GrupoG.controller
 
 import com.spprj.unq_dapps._s2_GrupoG.model.User
 import com.spprj.unq_dapps._s2_GrupoG.repositories.UserRepository
-import com.spprj.unq_dapps._s2_GrupoG.security.JwtService
+import com.spprj.unq_dapps._s2_GrupoG.security.JwtTokenProvider
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -18,7 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 class AuthController(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder,
-    private val jwtService: JwtService,
+    private val jwtTokenProvider: JwtTokenProvider,
     private val authenticationManager: AuthenticationManager
 ) {
 
@@ -42,7 +42,7 @@ class AuthController(
         val user = userRepository.findByEmail(loginRequest.email)
             ?: return ResponseEntity.badRequest().build()
 
-        val token = jwtService.generateToken(user)
+        val token = jwtTokenProvider.generateToken(user)
         return ResponseEntity.ok(mapOf("token" to token))
     }
 }
