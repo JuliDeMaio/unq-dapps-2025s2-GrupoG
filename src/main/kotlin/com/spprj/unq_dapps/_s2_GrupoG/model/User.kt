@@ -4,6 +4,7 @@ import com.spprj.unq_dapps._s2_GrupoG.model.enum.Role
 import jakarta.persistence.*
 
 @Entity
+@Table(name = "users")
 open class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

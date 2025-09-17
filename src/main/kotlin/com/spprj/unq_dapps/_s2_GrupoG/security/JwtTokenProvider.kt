@@ -8,9 +8,9 @@ import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
-class JwtService {
+class JwtTokenProvider {
 
-    private val secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256) // clave secreta segura
+    private val secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256)
     private val expiration: Long = 1000 * 60 * 60 // 1 hora
 
     fun generateToken(user: User): String {
@@ -23,27 +23,36 @@ class JwtService {
             .compact()
     }
 
-    fun extractUsername(token: String): String {
-        return Jwts.parserBuilder()
+    fun extractUsername(token: String): String =
+        Jwts.parserBuilder()
             .setSigningKey(secretKey)
             .build()
             .parseClaimsJws(token)
             .body
             .subject
-    }
+
+    fun extractRole(token: String): String? =
+        Jwts.parserBuilder()
+            .setSigningKey(secretKey)
+            .build()
+            .parseClaimsJws(token)
+            .body["role"] as? String
 
     fun isTokenValid(token: String, user: User): Boolean {
         val username = extractUsername(token)
         return (username == user.email) && !isTokenExpired(token)
     }
 
-    private fun isTokenExpired(token: String): Boolean {
-        val expiration = Jwts.parserBuilder()
+    fun validateToken(token: String, expectedUsername: String): Boolean {
+        val extracted = extractUsername(token)
+        return extracted == expectedUsername && !isTokenExpired(token)
+    }
+
+    private fun isTokenExpired(token: String): Boolean =
+        Jwts.parserBuilder()
             .setSigningKey(secretKey)
             .build()
             .parseClaimsJws(token)
             .body
-            .expiration
-        return expiration.before(Date())
-    }
+            .expiration.before(Date())
 }
