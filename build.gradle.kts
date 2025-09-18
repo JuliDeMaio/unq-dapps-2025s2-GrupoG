@@ -43,7 +43,7 @@ dependencies {
 	testImplementation(kotlin("test"))
 }
 
-sonarqube {
+sonar {
 	properties {
 		property("sonar.projectKey", "JuliDeMaio_unq-dapps-2025s2-GrupoG")
 		property("sonar.organization", "julidemaio")
