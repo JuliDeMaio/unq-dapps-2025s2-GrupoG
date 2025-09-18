@@ -5,6 +5,7 @@ plugins {
 	kotlin("jvm") version "1.9.25"
 	kotlin("plugin.spring") version "1.9.25"
 	kotlin("plugin.jpa") version "1.9.25"
+	id("org.sonarqube") version "5.1.0.4882"
 }
 
 
@@ -40,6 +41,14 @@ dependencies {
 	testImplementation("com.h2database:h2")
 	testImplementation("io.mockk:mockk:1.13.12") // mocks idiomáticos en Kotlin
 	testImplementation(kotlin("test"))
+}
+
+sonarqube {
+	properties {
+		property("sonar.projectKey", "JuliDeMaio_unq-dapps-2025s2-GrupoG")
+		property("sonar.organization", "julidemaio")
+		property("sonar.host.url", "https://sonarcloud.io")
+	}
 }
 
 tasks.withType<Test> {
