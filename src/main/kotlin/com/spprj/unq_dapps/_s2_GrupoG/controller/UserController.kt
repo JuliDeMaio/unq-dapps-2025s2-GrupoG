@@ -1,7 +1,6 @@
 package com.spprj.unq_dapps._s2_GrupoG.controller
 
 import com.spprj.unq_dapps._s2_GrupoG.model.User
-import com.spprj.unq_dapps._s2_GrupoG.repositories.UserRepository
 import com.spprj.unq_dapps._s2_GrupoG.service.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
