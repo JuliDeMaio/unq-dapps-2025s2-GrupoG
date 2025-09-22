@@ -1,7 +1,6 @@
 package com.spprj.unq_dapps._s2_GrupoG.controller
 
 import com.spprj.unq_dapps._s2_GrupoG.model.User
-import com.spprj.unq_dapps._s2_GrupoG.repositories.UserRepository
 import com.spprj.unq_dapps._s2_GrupoG.service.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -51,7 +50,7 @@ class UserController(
     @ApiResponse(responseCode = "204", description = "Usuario eliminado")
     @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     @ApiResponse(responseCode = "401", description = "No autenticado: falta token o es inválido")
-    fun deleteUser(@PathVariable id: Long): ResponseEntity<Void> {
+    fun deleteUser(@PathVariable id: Long): ResponseEntity<Unit> {
         return if (userService.delete(id)) ResponseEntity.noContent().build()
         else ResponseEntity.notFound().build()
     }

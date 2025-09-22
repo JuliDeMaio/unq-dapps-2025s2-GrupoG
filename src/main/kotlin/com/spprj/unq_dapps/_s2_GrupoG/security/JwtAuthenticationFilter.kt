@@ -31,9 +31,8 @@ class JwtAuthenticationFilter(
         val token = authHeader.substring(7)
         val email = jwtTokenProvider.extractUsername(token)
 
-        if (email != null && SecurityContextHolder.getContext().authentication == null) {
+        if (SecurityContextHolder.getContext().authentication == null) {
             val user = userRepository.findByEmail(email)
-
             if (user != null && jwtTokenProvider.isTokenValid(token, user)) {
                 val authToken = UsernamePasswordAuthenticationToken(
                     user, null, listOf(org.springframework.security.core.authority.SimpleGrantedAuthority(user.role.name))
@@ -42,7 +41,7 @@ class JwtAuthenticationFilter(
                 SecurityContextHolder.getContext().authentication = authToken
             }
         }
-
+        
         filterChain.doFilter(request, response)
     }
 }
