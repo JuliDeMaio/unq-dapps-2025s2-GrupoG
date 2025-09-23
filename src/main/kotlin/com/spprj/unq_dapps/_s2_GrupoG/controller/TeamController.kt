@@ -1,6 +1,7 @@
 package com.spprj.unq_dapps._s2_GrupoG.controller
 
 import com.spprj.unq_dapps._s2_GrupoG.external.footballdata.FootballDataService
+import com.spprj.unq_dapps._s2_GrupoG.external.footballdata.PlayerStatsAggregatorService
 import com.spprj.unq_dapps._s2_GrupoG.model.Player
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
@@ -13,11 +14,11 @@ import org.springframework.web.bind.annotation.*
 @Tag(name = "Equipos", description = "Endpoints de equipos")
 @SecurityRequirement(name = "bearerAuth")
 class TeamController(
-    private val footballDataService: FootballDataService
+    private val playerStatsAggregatorService: PlayerStatsAggregatorService
 ) {
     @GetMapping("/{teamId}/players")
-    @Operation(summary = "Jugadores de un equipo")
+    @Operation(summary = "Jugadores de un equipo con estadísticas")
     fun getPlayers(@PathVariable teamId: Long): ResponseEntity<List<Player>> {
-        return ResponseEntity.ok(footballDataService.playersOfTeam(teamId))
+        return ResponseEntity.ok(playerStatsAggregatorService.playersWithStats(teamId))
     }
 }

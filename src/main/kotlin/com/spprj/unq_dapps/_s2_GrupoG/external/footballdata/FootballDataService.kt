@@ -1,6 +1,8 @@
 package com.spprj.unq_dapps._s2_GrupoG.external.footballdata
 
 import com.spprj.unq_dapps._s2_GrupoG.config.FootballDataApiProperties
+import com.spprj.unq_dapps._s2_GrupoG.external.footballdata.dtos.FootballDataMatchDetailResponse
+import com.spprj.unq_dapps._s2_GrupoG.external.footballdata.dtos.FootballDataMatchesResponse
 import com.spprj.unq_dapps._s2_GrupoG.external.footballdata.dtos.FootballDataTeamResponse
 import com.spprj.unq_dapps._s2_GrupoG.model.Player
 import org.springframework.http.HttpHeaders
@@ -40,4 +42,22 @@ class FootballDataService(
             )
         }
     }
+
+    fun getRecentMatches(teamId: Long, limit: Int = 10): List<Long> {
+        val uri = URI.create("${props.baseUrl}/teams/$teamId/matches?status=FINISHED&limit=$limit")
+        val headers = HttpHeaders().apply { set(X_AUTH_TOKEN_HEADER, props.token) }
+        val request = RequestEntity<Any>(headers, HttpMethod.GET, uri)
+        val response = restTemplate.exchange(request, FootballDataMatchesResponse::class.java)
+        val body = response.body ?: return emptyList()
+        return body.matches.map { it.id }
+    }
+
+    fun getMatch(matchId: Long): FootballDataMatchDetailResponse {
+        val uri = URI.create("${props.baseUrl}/matches/$matchId")
+        val headers = HttpHeaders().apply { set(X_AUTH_TOKEN_HEADER, props.token) }
+        val request = RequestEntity<Any>(headers, HttpMethod.GET, uri)
+        val response = restTemplate.exchange(request, FootballDataMatchDetailResponse::class.java)
+        return response.body ?: FootballDataMatchDetailResponse()
+    }
+
 }
