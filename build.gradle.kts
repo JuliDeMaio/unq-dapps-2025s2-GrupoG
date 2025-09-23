@@ -27,13 +27,21 @@ dependencies {
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
+    implementation("org.jsoup:jsoup:1.18.1")
 
-	// JWT
+    // JWT
 	implementation("io.jsonwebtoken:jjwt-api:0.11.5")
 	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
 	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
 
-	// DB
+    // Selenium + Chrome
+    implementation("org.seleniumhq.selenium:selenium-java:4.21.0")
+    implementation("org.seleniumhq.selenium:selenium-chrome-driver:4.21.0")
+
+    // Para esperar elementos dinámicos
+    implementation("org.seleniumhq.selenium:selenium-support:4.21.0")
+
+    // DB
 	runtimeOnly("com.mysql:mysql-connector-j")
 
 	// Testing

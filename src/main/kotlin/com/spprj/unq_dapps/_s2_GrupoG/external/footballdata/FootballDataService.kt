@@ -1,9 +1,5 @@
 package com.spprj.unq_dapps._s2_GrupoG.external.footballdata
 
-import com.spprj.unq_dapps._s2_GrupoG.config.FootballDataApiProperties
-import com.spprj.unq_dapps._s2_GrupoG.external.footballdata.dtos.FootballDataMatchDetailResponse
-import com.spprj.unq_dapps._s2_GrupoG.external.footballdata.dtos.FootballDataMatchesResponse
-import com.spprj.unq_dapps._s2_GrupoG.external.footballdata.dtos.FootballDataTeamResponse
 import com.spprj.unq_dapps._s2_GrupoG.model.Player
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -14,50 +10,33 @@ import java.net.URI
 
 @Service
 class FootballDataService(
-    private val restTemplate: RestTemplate,
-    private val props: FootballDataApiProperties
+    private val restTemplate: RestTemplate
 ) {
-
+    private val baseUrl = "https://api.football-data.org/v4"
+    private val token = "e7986576ad454ff186dadd4e06c8700d" // ⚠️ reemplazalo con tu X-Auth-Token
     private val X_AUTH_TOKEN_HEADER = "X-Auth-Token"
 
     fun playersOfTeam(teamId: Long): List<Player> {
-        val uri = URI.create("${props.baseUrl}/teams/$teamId")
+        val uri = URI.create("$baseUrl/teams/$teamId")
 
         val headers = HttpHeaders().apply {
-            set(X_AUTH_TOKEN_HEADER, props.token)
+            set(X_AUTH_TOKEN_HEADER, token)
         }
         val request = RequestEntity<Any>(headers, HttpMethod.GET, uri)
 
-        val response = restTemplate.exchange(request, FootballDataTeamResponse::class.java)
+        val response = restTemplate.exchange(request, Map::class.java)
+        val body = response.body ?: return emptyList()
 
-        val body = response.body ?: throw IllegalStateException("No se pudo traer datos del equipo $teamId")
+        val squad = body["squad"] as? List<Map<String, Any>> ?: return emptyList()
 
-        return body.squad.map { squadPlayer ->
+        return squad.map {
             Player(
-                name = squadPlayer.name,
-                matchesPlayed = squadPlayer.stats?.matchesOnPitch ?: 0,
-                goals = squadPlayer.stats?.goals ?: 0,
-                assists = squadPlayer.stats?.assists ?: 0,
-                rating = null // quedará null hasta scraping de WhoScored
+                name = it["name"] as? String ?: "Unknown",
+                matchesPlayed = 0, // Football-Data free no da stats individuales
+                goals = 0,
+                assists = 0,
+                rating = null
             )
         }
     }
-
-    fun getRecentMatches(teamId: Long, limit: Int = 10): List<Long> {
-        val uri = URI.create("${props.baseUrl}/teams/$teamId/matches?status=FINISHED&limit=$limit")
-        val headers = HttpHeaders().apply { set(X_AUTH_TOKEN_HEADER, props.token) }
-        val request = RequestEntity<Any>(headers, HttpMethod.GET, uri)
-        val response = restTemplate.exchange(request, FootballDataMatchesResponse::class.java)
-        val body = response.body ?: return emptyList()
-        return body.matches.map { it.id }
-    }
-
-    fun getMatch(matchId: Long): FootballDataMatchDetailResponse {
-        val uri = URI.create("${props.baseUrl}/matches/$matchId")
-        val headers = HttpHeaders().apply { set(X_AUTH_TOKEN_HEADER, props.token) }
-        val request = RequestEntity<Any>(headers, HttpMethod.GET, uri)
-        val response = restTemplate.exchange(request, FootballDataMatchDetailResponse::class.java)
-        return response.body ?: FootballDataMatchDetailResponse()
-    }
-
 }
