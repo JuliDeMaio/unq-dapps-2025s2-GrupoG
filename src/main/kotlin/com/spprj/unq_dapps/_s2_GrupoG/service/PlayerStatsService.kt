@@ -16,6 +16,7 @@ class PlayerStatsService(
         return squad.map { squadPlayer ->
             val stats = whoScored.getStats("Manchester City", squadPlayer.name) // ⚠️ por ahora teamName hardcodeado
             squadPlayer.copy(
+                matchesPlayed = stats?.matchesPlayed ?: squadPlayer.matchesPlayed,
                 goals = stats?.goals ?: squadPlayer.goals,
                 assists = stats?.assists ?: squadPlayer.assists,
                 rating = stats?.rating ?: squadPlayer.rating
