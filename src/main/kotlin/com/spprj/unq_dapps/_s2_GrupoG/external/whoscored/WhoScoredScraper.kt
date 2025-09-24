@@ -53,10 +53,11 @@ class WhoScoredScraper : WhoScoredStatsProvider {
             wait.until(ExpectedConditions.presenceOfElementLocated(By.id("player-table-statistics-body")))
 
             val table = driver.findElement(By.cssSelector("table tbody"))
-            val firstRow = table.findElements(By.tagName("tr")).firstOrNull() ?: return null
-            val cells = firstRow.findElements(By.tagName("td"))
+            val rows = table.findElements(By.tagName("tr"))
+            val totalRow = rows.lastOrNull() ?: return null
+            val cells = totalRow.findElements(By.tagName("td"))
 
-            val matches = cells.getOrNull(2)?.text?.toIntOrNull() ?: 0
+            val matches = cells.getOrNull(1)?.text?.toIntOrNull() ?: 0
             val goals = cells.getOrNull(3)?.text?.toIntOrNull() ?: 0
             val assists = cells.getOrNull(4)?.text?.toIntOrNull() ?: 0
             val rating = cells.lastOrNull()?.text?.toDoubleOrNull()
