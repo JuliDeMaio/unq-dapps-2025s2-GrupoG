@@ -45,7 +45,7 @@ class WhoScoredScraper {
 
     fun getPlayersOfTeam(teamId: String): List<Player> {
         val url = "https://www.whoscored.com/teams/$teamId/show"
-        println("🌐 Abriendo página de equipo: $url")
+        println("Opening team page: $url")
         driver.get(url)
 
         wait.until(ExpectedConditions.presenceOfElementLocated(By.id("team-squad-stats")))
@@ -56,7 +56,7 @@ class WhoScoredScraper {
         }
 
         val players = mutableListOf<Player>()
-        println("📊 Filas detectadas: ${rows.size}")
+        println("Detects roads: ${rows.size}")
 
         val js = driver as JavascriptExecutor
 
@@ -65,7 +65,6 @@ class WhoScoredScraper {
                 val cells = row.findElements(By.tagName("td"))
                 if (cells.isEmpty()) continue
 
-                // 👇 Solo el texto del <a>, no de toda la celda
                 val nameElement = cells[0].findElement(By.tagName("a"))
                 val playerName = (js.executeScript("return arguments[0].innerText;", nameElement) as String)
                     .trim()
@@ -89,11 +88,11 @@ class WhoScoredScraper {
                     )
                 )
             } catch (e: Exception) {
-                println("⚠️ Error procesando fila: ${e.message}")
+                println("Error processing row: ${e.message}")
             }
         }
 
-        println("🎯 Total jugadores extraídos: ${players.size}")
+        println("Total extracted players: ${players.size}")
         return players
     }
 }
