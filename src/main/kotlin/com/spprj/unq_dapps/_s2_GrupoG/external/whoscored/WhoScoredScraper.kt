@@ -1,6 +1,5 @@
 package com.spprj.unq_dapps._s2_GrupoG.external.whoscored
 
-import org.jsoup.Jsoup
 import org.openqa.selenium.By
 import org.openqa.selenium.WebDriver
 import org.openqa.selenium.chrome.ChromeDriver
@@ -15,19 +14,28 @@ class WhoScoredScraper : WhoScoredStatsProvider {
 
     private val playerUrlMap = mapOf(
         "Erling Haaland" to "https://www.whoscored.com/players/315227/show/erling-haaland",
-        "Kevin De Bruyne" to "https://www.whoscored.com/players/73084/show/kevin-de-bruyne",
+        "Mohamed Salah" to "https://www.whoscored.com/players/108226/show/mohamed-salah",
         "Phil Foden" to "https://www.whoscored.com/players/331254/show/phil-foden",
         "Rúben Dias" to "https://www.whoscored.com/players/313171/show/r%C3%BAben-dias"
     )
 
     private val driver: WebDriver by lazy {
-        val options = ChromeOptions()
-        options.setBinary("C:\\Users\\Equipo\\Desktop\\Facultad\\Desarrollo de Aplicaciones") // ruta a tu Chrome de testing
-        options.addArguments("--headless=new")
-        options.addArguments("--disable-gpu")
-        options.addArguments("--no-sandbox")
-        options.addArguments("--disable-dev-shm-usage")
-        options.addArguments("--window-size=1920,1080")
+        val options = ChromeOptions().apply {
+            addArguments("--disable-blink-features=AutomationControlled")
+            addArguments("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+                    "AppleWebKit/537.36 (KHTML, like Gecko) " +
+                    "Chrome/140.0.7339.208 Safari/537.36")
+            addArguments("--headless=new") // probá también sin headless si sigue bloqueando
+            addArguments("--no-sandbox")
+            addArguments("--disable-dev-shm-usage")
+            addArguments("--disable-extensions")
+            addArguments("--remote-allow-origins=*")
+            addArguments("--disable-gpu")
+            addArguments("--disable-browser-side-navigation")
+            addArguments("--dns-prefetch-disable")
+            addArguments("--window-size=1920,1080")
+            addArguments("--user-data-dir=${System.getProperty("java.io.tmpdir")}/chrome-data-${System.currentTimeMillis()}")
+        }
         ChromeDriver(options)
     }
 
@@ -39,12 +47,12 @@ class WhoScoredScraper : WhoScoredStatsProvider {
     private fun scrapeStats(url: String): PlayerStatsData? {
         return try {
             driver.get(url)
-
+            println(driver.pageSource)
             // Esperar a que aparezca la tabla de stats
             val wait = WebDriverWait(driver, Duration.ofSeconds(10))
             wait.until(ExpectedConditions.presenceOfElementLocated(By.id("player-table-statistics-body")))
 
-            val table = driver.findElement(By.id("player-table-statistics-body"))
+            val table = driver.findElement(By.cssSelector("table tbody"))
             val firstRow = table.findElements(By.tagName("tr")).firstOrNull() ?: return null
             val cells = firstRow.findElements(By.tagName("td"))
 

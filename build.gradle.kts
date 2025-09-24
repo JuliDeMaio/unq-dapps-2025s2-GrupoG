@@ -34,12 +34,10 @@ dependencies {
 	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
 	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
 
-    // Selenium + Chrome
-    implementation("org.seleniumhq.selenium:selenium-java:4.21.0")
-    implementation("org.seleniumhq.selenium:selenium-chrome-driver:4.21.0")
-
-    // Para esperar elementos dinámicos
-    implementation("org.seleniumhq.selenium:selenium-support:4.21.0")
+    implementation(platform("org.seleniumhq.selenium:selenium-bom:4.25.0"))
+    implementation("org.seleniumhq.selenium:selenium-java")
+    implementation("org.seleniumhq.selenium:selenium-chrome-driver")
+    implementation("org.seleniumhq.selenium:selenium-support")
 
     // DB
 	runtimeOnly("com.mysql:mysql-connector-j")
