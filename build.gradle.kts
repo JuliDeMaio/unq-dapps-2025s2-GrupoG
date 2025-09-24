@@ -18,6 +18,9 @@ repositories {
 	mavenCentral()
 }
 
+// Versiones centralizadas
+val seleniumVersion = "4.26.0"
+
 dependencies {
     // --- Spring Boot ---
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -38,7 +41,6 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
 
     // --- Selenium ---
-    val seleniumVersion = "4.26.0"
     implementation(platform("org.seleniumhq.selenium:selenium-bom:$seleniumVersion"))
     implementation("org.seleniumhq.selenium:selenium-java")
     implementation("org.seleniumhq.selenium:selenium-chrome-driver")
