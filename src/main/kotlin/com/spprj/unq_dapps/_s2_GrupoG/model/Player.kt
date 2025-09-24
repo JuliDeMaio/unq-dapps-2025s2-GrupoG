@@ -5,5 +5,5 @@ data class Player(
     val matchesPlayed: Int,
     val goals: Int,
     val assists: Int,
-    val rating: Double? // queda null por ahora
+    val rating: Double?
 )

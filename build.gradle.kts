@@ -8,7 +8,6 @@ plugins {
 	id("org.sonarqube") version "5.1.0.4882"
 }
 
-
 java {
 	toolchain {
 		languageVersion.set(JavaLanguageVersion.of(21))
@@ -27,19 +26,23 @@ dependencies {
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
-    implementation("org.jsoup:jsoup:1.18.1")
 
-    // JWT
+	// Utilidades
+	implementation("org.jsoup:jsoup:1.18.1")
+
+	// JWT
 	implementation("io.jsonwebtoken:jjwt-api:0.11.5")
 	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
 	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
 
-    implementation(platform("org.seleniumhq.selenium:selenium-bom:4.25.0"))
-    implementation("org.seleniumhq.selenium:selenium-java")
-    implementation("org.seleniumhq.selenium:selenium-chrome-driver")
-    implementation("org.seleniumhq.selenium:selenium-support")
+	// Selenium (usar siempre la misma versión, la última estable)
+	val seleniumVersion = "4.26.0"
+	implementation(platform("org.seleniumhq.selenium:selenium-bom:$seleniumVersion"))
+	implementation("org.seleniumhq.selenium:selenium-java")
+	implementation("org.seleniumhq.selenium:selenium-chrome-driver")
+	implementation("org.seleniumhq.selenium:selenium-support")
 
-    // DB
+	// DB
 	runtimeOnly("com.mysql:mysql-connector-j")
 
 	// Testing

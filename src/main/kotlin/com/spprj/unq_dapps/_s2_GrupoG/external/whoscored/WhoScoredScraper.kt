@@ -1,7 +1,10 @@
 package com.spprj.unq_dapps._s2_GrupoG.external.whoscored
 
+import com.spprj.unq_dapps._s2_GrupoG.model.Player
 import org.openqa.selenium.By
+import org.openqa.selenium.JavascriptExecutor
 import org.openqa.selenium.WebDriver
+import org.openqa.selenium.WebElement
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.support.ui.ExpectedConditions
@@ -10,82 +13,87 @@ import org.springframework.stereotype.Component
 import java.time.Duration
 
 @Component
-class WhoScoredScraper : WhoScoredStatsProvider {
+class WhoScoredScraper {
 
     private val driver: WebDriver by lazy {
         val options = ChromeOptions().apply {
             addArguments("--disable-blink-features=AutomationControlled")
-            addArguments(
-                "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-                        "AppleWebKit/537.36 (KHTML, like Gecko) " +
-                        "Chrome/140.0.7339.208 Safari/537.36"
-            )
+            addArguments("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+                    "AppleWebKit/537.36 (KHTML, like Gecko) " +
+                    "Chrome/140.0.7339.208 Safari/537.36")
             addArguments("--headless=new")
             addArguments("--no-sandbox")
             addArguments("--disable-dev-shm-usage")
             addArguments("--disable-extensions")
             addArguments("--remote-allow-origins=*")
             addArguments("--disable-gpu")
-            addArguments("--disable-browser-side-navigation")
-            addArguments("--dns-prefetch-disable")
             addArguments("--window-size=1920,1080")
         }
         ChromeDriver(options)
     }
 
-    fun getAllPlayersStatsFromTeamPage(teamId: String): Map<String, PlayerStatsData> {
+    private val wait = WebDriverWait(driver, Duration.ofSeconds(30))
+
+    private fun getCellText(js: JavascriptExecutor, cell: WebElement?): String {
+        if (cell == null) return ""
+        return try {
+            (js.executeScript("return arguments[0].innerText;", cell) as String).trim()
+        } catch (e: Exception) {
+            ""
+        }
+    }
+
+    fun getPlayersOfTeam(teamId: String): List<Player> {
         val url = "https://www.whoscored.com/teams/$teamId/show"
-        println("🌐 Abriendo URL: $url")
+        println("🌐 Abriendo página de equipo: $url")
         driver.get(url)
 
-        val wait = WebDriverWait(driver, Duration.ofSeconds(15))
         wait.until(ExpectedConditions.presenceOfElementLocated(By.id("team-squad-stats")))
 
-        val playerLinks = driver.findElements(By.cssSelector("#team-squad-stats a.player-link"))
+        val rows: List<WebElement> = wait.until {
+            val elements = driver.findElements(By.cssSelector("#team-squad-stats tbody tr"))
+            if (elements.isNotEmpty()) elements else null
+        }
 
-        val result = mutableMapOf<String, PlayerStatsData>()
+        val players = mutableListOf<Player>()
+        println("📊 Filas detectadas: ${rows.size}")
 
-        for (link in playerLinks) {
-            val playerName = link.text.trim()
-            val playerUrl = link.getAttribute("href")
+        val js = driver as JavascriptExecutor
 
-            if (playerUrl.isNullOrBlank() || playerName.isBlank()) continue
-
-            println("➡️ Procesando jugador: $playerName ($playerUrl)")
+        for (row in rows) {
             try {
-                driver.get(playerUrl)
-                wait.until(ExpectedConditions.presenceOfElementLocated(By.id("player-table-statistics-body")))
+                val cells = row.findElements(By.tagName("td"))
+                if (cells.isEmpty()) continue
 
-                val rows = driver.findElement(By.id("player-table-statistics-body"))
-                    .findElements(By.tagName("tr"))
-                val totalRow = rows.lastOrNull() ?: continue
-                val cells = totalRow.findElements(By.tagName("td"))
+                // 👇 Solo el texto del <a>, no de toda la celda
+                val nameElement = cells[0].findElement(By.tagName("a"))
+                val playerName = (js.executeScript("return arguments[0].innerText;", nameElement) as String)
+                    .trim()
+                    .replace(Regex("^\\d+\\s*"), "")
+                if (playerName.isBlank()) continue
 
-                val matches = cells.getOrNull(1)?.text?.toIntOrNull() ?: 0
-                val goals = cells.getOrNull(3)?.text?.toIntOrNull() ?: 0
-                val assists = cells.getOrNull(4)?.text?.toIntOrNull() ?: 0
-                val rating = cells.lastOrNull()?.text?.replace(",", ".")?.toDoubleOrNull()
+                val matches = getCellText(js, cells.getOrNull(4)).toIntOrNull() ?: 0
+                val goals = getCellText(js, cells.getOrNull(6)).toIntOrNull() ?: 0
+                val assists = getCellText(js, cells.getOrNull(7)).toIntOrNull() ?: 0
+                val rating = getCellText(js, cells.lastOrNull()).replace(",", ".").toDoubleOrNull()
 
-                result[playerName] = PlayerStatsData(
-                    matchesPlayed = matches,
-                    goals = goals,
-                    assists = assists,
-                    rating = rating
+                println("✅ $playerName → $matches PJ, $goals G, $assists A, $rating Rating")
+
+                players.add(
+                    Player(
+                        name = playerName,
+                        matchesPlayed = matches,
+                        goals = goals,
+                        assists = assists,
+                        rating = rating
+                    )
                 )
-                println("✅ Stats $playerName: $matches PJ, $goals G, $assists A, $rating Rating")
-
             } catch (e: Exception) {
-                println("❌ Error procesando $playerName → ${e.message}")
+                println("⚠️ Error procesando fila: ${e.message}")
             }
         }
 
-        return result
-    }
-
-    // Mantengo la interfaz para no romper otras capas
-    override fun getStats(teamName: String, playerName: String): PlayerStatsData? {
-        // Ahora simplemente no hace búsqueda, sino lookup en el map cargado por teamId
-        // Podés cachear el último resultado si querés.
-        return null
+        println("🎯 Total jugadores extraídos: ${players.size}")
+        return players
     }
 }
