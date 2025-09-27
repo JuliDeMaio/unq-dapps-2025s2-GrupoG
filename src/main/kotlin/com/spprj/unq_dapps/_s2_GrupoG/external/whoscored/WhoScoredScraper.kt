@@ -56,7 +56,7 @@ class WhoScoredScraper {
         }
 
         val players = mutableListOf<Player>()
-        println("Detects roads: ${rows.size}")
+        println("Detects rows: ${rows.size}")
 
         val js = driver as JavascriptExecutor
 
@@ -80,6 +80,8 @@ class WhoScoredScraper {
 
                 players.add(
                     Player(
+                        id = null,
+                        teamId = teamId, // 👈 agregado
                         name = playerName,
                         matchesPlayed = matches,
                         goals = goals,
@@ -95,4 +97,5 @@ class WhoScoredScraper {
         println("Total extracted players: ${players.size}")
         return players
     }
+
 }
