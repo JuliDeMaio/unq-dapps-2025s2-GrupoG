@@ -1,11 +1,11 @@
 plugins {
 	id("org.springframework.boot") version "3.2.5"
 	id("io.spring.dependency-management") version "1.1.5"
-
 	kotlin("jvm") version "1.9.25"
 	kotlin("plugin.spring") version "1.9.25"
 	kotlin("plugin.jpa") version "1.9.25"
 	id("org.sonarqube") version "5.1.0.4882"
+	jacoco
 }
 
 java {
@@ -61,6 +61,22 @@ sonar {
 	}
 }
 
-tasks.withType<Test> {
-	useJUnitPlatform()
+jacoco {
+	toolVersion = "0.8.10"
 }
+
+tasks.test {
+	useJUnitPlatform()
+	finalizedBy(tasks.jacocoTestReport) // corre jacoco después de los tests
+}
+
+tasks.jacocoTestReport {
+	dependsOn(tasks.test) // primero tests, después el reporte
+	reports {
+		xml.required.set(true) // 👈 importante para sonar
+		csv.required.set(false)
+		html.required.set(true)
+	}
+}
+
+
