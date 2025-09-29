@@ -12,20 +12,20 @@ class ScraperSchedulerServiceImpl(
 
     @Scheduled(cron = "0 0 */4 * * *") // cada 4 horas
     fun scheduledPopulate() {
-        println("▶️ Ejecutando scheduler de scraping...")
+        println("▶️ Executing scraping scheduler...")
 
         val teams = teamRepository.findAll()
-        println("📌 Se encontraron ${teams.size} equipos en la base de datos")
+        println("📌 Founded ${teams.size} teams at database")
 
         teams.forEach { team ->
-            println("⚽ Scrapeando equipo ${team.name} (${team.id})")
+            println("⚽ Scraping team ${team.name} (${team.id})")
             try {
                 playerService.populateDataBaseFromScrapperService(team.id)
             } catch (e: Exception) {
-                println("❌ Error al scrapear equipo ${team.name}: ${e.message}")
+                println("❌ Error at scrapping team ${team.name}: ${e.message}")
             }
         }
 
-        println("✅ Scheduler finalizado")
+        println("✅ Scheduler finished")
     }
 }
