@@ -58,6 +58,10 @@ sonar {
 		property("sonar.projectKey", "JuliDeMaio_unq-dapps-2025s2-GrupoG")
 		property("sonar.organization", "julidemaio")
 		property("sonar.host.url", "https://sonarcloud.io")
+		property(
+			"sonar.coverage.jacoco.xmlReportPaths",
+			"build/reports/jacoco/test/jacocoTestReport.xml"
+		)
 	}
 }
 
