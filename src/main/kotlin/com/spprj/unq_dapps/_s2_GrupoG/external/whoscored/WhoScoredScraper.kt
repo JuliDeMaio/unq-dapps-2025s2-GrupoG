@@ -1,5 +1,6 @@
 package com.spprj.unq_dapps._s2_GrupoG.external.whoscored
 
+import com.spprj.unq_dapps._s2_GrupoG.external.dto.PlayerHistoryDTO
 import com.spprj.unq_dapps._s2_GrupoG.model.Player
 import org.openqa.selenium.By
 import org.openqa.selenium.JavascriptExecutor
@@ -97,5 +98,56 @@ class WhoScoredScraper {
         println("Total extracted players: ${players.size}")
         return players
     }
+
+    fun getPlayerHistory(playerId: String, playerSlug: String): PlayerHistoryDTO? {
+        val url = "https://www.whoscored.com/players/$playerId/history/$playerSlug"
+        println("📖 Opening player history page: $url")
+        driver.get(url)
+
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#player-table-statistics-body")))
+
+        val tbody = driver.findElement(By.cssSelector("#player-table-statistics-body"))
+        val rows = tbody.findElements(By.tagName("tr"))
+        if (rows.isEmpty()) {
+            println("⚠️ No rows found for player $playerId")
+            return null
+        }
+
+        val lastRow = rows.last() // 👈 toma solo la última fila
+        val js = driver as JavascriptExecutor
+
+        fun cellText(cell: WebElement?) = try {
+            (js.executeScript("return arguments[0].innerText;", cell) as String).trim()
+        } catch (_: Exception) { "" }
+
+        val cells = lastRow.findElements(By.tagName("td"))
+        if (cells.size < 9) {
+            println("⚠️ Not enough columns for player $playerId")
+            return null
+        }
+
+        val appearances   = cellText(cells.getOrNull(2)).replace(",", "").toIntOrNull() ?: 0
+        val minutesPlayed = cellText(cells.getOrNull(3)).replace(",", "").toIntOrNull() ?: 0
+        val goals         = cellText(cells.getOrNull(4)).replace(",", "").toIntOrNull() ?: 0
+        val assists       = cellText(cells.getOrNull(5)).replace(",", "").toIntOrNull() ?: 0
+        val yellowCards   = cellText(cells.getOrNull(6)).replace(",", "").toIntOrNull() ?: 0
+        val redCards      = cellText(cells.getOrNull(7)).replace(",", "").toIntOrNull() ?: 0
+        val averageRating = cellText(cells.getOrNull(12)).replace(",", ".").toDoubleOrNull()
+
+        val dto = PlayerHistoryDTO(
+            appearances = appearances,
+            goals = goals,
+            assists = assists,
+            yellowCards = yellowCards,
+            redCards = redCards,
+            minutesPlayed = minutesPlayed,
+            averageRating = averageRating
+        )
+
+        println("✅ Historical stats for player $playerId → $dto")
+        return dto
+    }
+
+
 
 }
