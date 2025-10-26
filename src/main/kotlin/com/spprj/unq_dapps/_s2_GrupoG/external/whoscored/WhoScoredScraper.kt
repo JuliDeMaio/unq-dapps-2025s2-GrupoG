@@ -2,6 +2,7 @@ package com.spprj.unq_dapps._s2_GrupoG.external.whoscored
 
 import com.spprj.unq_dapps._s2_GrupoG.external.dto.PlayerHistoryDTO
 import com.spprj.unq_dapps._s2_GrupoG.model.Player
+import io.github.bonigarcia.wdm.WebDriverManager
 import org.openqa.selenium.By
 import org.openqa.selenium.JavascriptExecutor
 import org.openqa.selenium.WebDriver
@@ -17,6 +18,8 @@ import java.time.Duration
 class WhoScoredScraper {
 
     private val driver: WebDriver by lazy {
+        WebDriverManager.chromedriver().setup()
+
         val options = ChromeOptions().apply {
             addArguments("--disable-blink-features=AutomationControlled")
             addArguments("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
