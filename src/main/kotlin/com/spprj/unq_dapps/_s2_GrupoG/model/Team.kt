@@ -9,9 +9,12 @@ import jakarta.persistence.Table
 @Table(name = "teams")
 open class Team(
     @Id
-    @Column(length = 50) // para que no te dé problemas de tamaño
-    val id: String,      // el ID de WhoScored (ej: "26", "167")
+    @Column(length = 50)
+    val id: String,
 
     @Column(nullable = false, unique = true)
-    val name: String
+    val name: String,
+
+    @Column
+    val rating: Double? = null
 )
