@@ -1,5 +1,6 @@
 package com.spprj.unq_dapps._s2_GrupoG.service.impl
 
+import com.spprj.unq_dapps._s2_GrupoG.external.dto.PlayerHistoryDTO
 import com.spprj.unq_dapps._s2_GrupoG.external.whoscored.WhoScoredScraper
 import com.spprj.unq_dapps._s2_GrupoG.model.Player
 import com.spprj.unq_dapps._s2_GrupoG.repositories.PlayerRepository
@@ -41,5 +42,9 @@ class PlayerServiceImpl(
 
     fun getPlayersFromDb(teamId: String): List<Player> {
         return playerRepository.findByTeamId(teamId)
+    }
+
+    fun getPlayerHistory(playerId: String, playerSlug: String): PlayerHistoryDTO? {
+        return whoScoredScraper.getPlayerHistory(playerId, playerSlug)
     }
 }
