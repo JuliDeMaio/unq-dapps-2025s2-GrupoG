@@ -50,7 +50,7 @@ dependencies {
 	// Testing
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("com.h2database:h2")
-	testImplementation("io.mockk:mockk:1.13.12") // mocks idiomáticos en Kotlin
+	testImplementation("io.mockk:mockk:1.13.12")
 	testImplementation(kotlin("test"))
 }
 
