@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.format.annotation.DateTimeFormat
+import java.time.LocalDate
 
 @RestController
 @RequestMapping("/users")
@@ -54,4 +56,29 @@ class UserController(
         return if (userService.delete(id)) ResponseEntity.noContent().build()
         else ResponseEntity.notFound().build()
     }
+
+    @GetMapping("/{userId}/queries")
+    @Operation(summary = "Obtener las consultas realizadas por un usuario en una fecha específica")
+    fun getUserQueries(
+        @PathVariable userId: Long,
+        @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
+    ): ResponseEntity<Map<String, Any>> {
+        val logs = userService.getUserQueriesByDate(userId, date)
+
+        val response = mapOf(
+            "userId" to userId,
+            "date" to date,
+            "queries" to logs.map {
+                mapOf(
+                    "endpoint" to it.endpoint,
+                    "method" to it.method,
+                    "requestBody" to it.requestBody,
+                    "responseBody" to it.responseBody
+                )
+            }
+        )
+
+        return ResponseEntity.ok(response)
+    }
+
 }
