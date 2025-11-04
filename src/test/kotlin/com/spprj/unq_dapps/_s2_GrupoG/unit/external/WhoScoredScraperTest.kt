@@ -137,21 +137,22 @@ class WhoScoredScraperTest {
 
     @Test
     fun `08 - getPlayersOfTeam should parse players from mocked elements`() {
-        val driver = mock(WebDriver::class.java)
-        val js = mock(JavascriptExecutor::class.java)
+        val driver = mock(WebDriver::class.java, withSettings().extraInterfaces(JavascriptExecutor::class.java))
+        val js = driver as JavascriptExecutor
+
         val row = mock(WebElement::class.java)
         val nameElement = mock(WebElement::class.java)
         val tdName = mock(WebElement::class.java)
-        val tdList = listOf(tdName, mock(WebElement::class.java), mock(WebElement::class.java),
-            mock(WebElement::class.java), mock(WebElement::class.java), mock(WebElement::class.java),
-            mock(WebElement::class.java), mock(WebElement::class.java))
+        val tdList = listOf(
+            tdName, mock(WebElement::class.java), mock(WebElement::class.java),
+            mock(WebElement::class.java), mock(WebElement::class.java),
+            mock(WebElement::class.java), mock(WebElement::class.java), mock(WebElement::class.java)
+        )
 
-        // Simula estructura HTML mínima
         `when`(row.findElements(By.tagName("td"))).thenReturn(tdList)
         `when`(tdName.findElement(By.tagName("a"))).thenReturn(nameElement)
         `when`(js.executeScript(anyString(), eq(nameElement))).thenReturn("Lionel Messi")
         `when`(driver.findElements(By.cssSelector("#team-squad-stats tbody tr"))).thenReturn(listOf(row))
-        `when`(driver as JavascriptExecutor).thenReturn(js)
 
         val scraperMock = WhoScoredScraper(driver, isTestMode = true)
         val result = scraperMock.getPlayersOfTeam("26")
