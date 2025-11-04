@@ -16,7 +16,8 @@ import java.time.Duration
 
 @Component
 class WhoScoredScraper(
-    private val customDriver: WebDriver? = null // 👈 Permite inyectar mocks o drivers de test
+    private val customDriver: WebDriver? = null,
+    private val isTestMode: Boolean = false // 👈 Nuevo flag para evitar Selenium real en tests
 ) {
 
     companion object {
@@ -24,7 +25,6 @@ class WhoScoredScraper(
     }
 
     private val driver: WebDriver by lazy {
-        // Si se pasa un driver desde test, lo usa; sino crea el ChromeDriver real
         customDriver ?: run {
             WebDriverManager.chromedriver().setup()
             val options = ChromeOptions().apply {
@@ -46,7 +46,8 @@ class WhoScoredScraper(
         }
     }
 
-    private val wait = WebDriverWait(driver, Duration.ofSeconds(30))
+    private val wait: WebDriverWait? =
+        if (isTestMode) null else WebDriverWait(driver, Duration.ofSeconds(30))
 
     private fun getCellText(js: JavascriptExecutor, cell: WebElement?): String {
         if (cell == null) return ""
@@ -62,11 +63,17 @@ class WhoScoredScraper(
         println("Opening team page: $url")
         driver.get(url)
 
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("team-squad-stats")))
+        if (!isTestMode) {
+            wait!!.until(ExpectedConditions.presenceOfElementLocated(By.id("team-squad-stats")))
+        }
 
-        val rows: List<WebElement> = wait.until {
-            val elements = driver.findElements(By.cssSelector("#team-squad-stats tbody tr"))
-            if (elements.isNotEmpty()) elements else null
+        val rows: List<WebElement> = if (!isTestMode) {
+            wait!!.until {
+                val elements = driver.findElements(By.cssSelector("#team-squad-stats tbody tr"))
+                if (elements.isNotEmpty()) elements else null
+            }
+        } else {
+            driver.findElements(By.cssSelector("#team-squad-stats tbody tr"))
         }
 
         val players = mutableListOf<Player>()
@@ -118,7 +125,13 @@ class WhoScoredScraper(
         @Suppress("ReplaceGetOrSet")
         driver.get(url)
 
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#player-table-statistics-body")))
+        if (!isTestMode) {
+            wait!!.until(
+                ExpectedConditions.presenceOfElementLocated(
+                    By.cssSelector("#player-table-statistics-body")
+                )
+            )
+        }
 
         val tbody = driver.findElement(By.cssSelector("#player-table-statistics-body"))
         val rows = tbody.findElements(By.tagName("tr"))
