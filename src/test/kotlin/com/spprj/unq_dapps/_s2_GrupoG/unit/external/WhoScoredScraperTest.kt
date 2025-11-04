@@ -173,4 +173,80 @@ class WhoScoredScraperTest {
 
         assertNull(result)
     }
+
+    @Test
+    fun `10 - should skip rows with empty cells`() {
+        val driver = mock(WebDriver::class.java, withSettings().extraInterfaces(JavascriptExecutor::class.java))
+        val row = mock(WebElement::class.java)
+        `when`(row.findElements(By.tagName("td"))).thenReturn(emptyList())
+        `when`(driver.findElements(By.cssSelector("#team-squad-stats tbody tr"))).thenReturn(listOf(row))
+
+        val scraperMock = WhoScoredScraper(driver, isTestMode = true)
+        val result = scraperMock.getPlayersOfTeam("26")
+
+        assertTrue(result.isEmpty()) // ninguna fila válida
+    }
+
+    @Test
+    fun `11 - should skip players with blank name`() {
+        val driver = mock(WebDriver::class.java, withSettings().extraInterfaces(JavascriptExecutor::class.java))
+        val js = driver as JavascriptExecutor
+        val row = mock(WebElement::class.java)
+        val nameElement = mock(WebElement::class.java)
+        val td = mock(WebElement::class.java)
+        val tdList = listOf(td)
+        `when`(row.findElements(By.tagName("td"))).thenReturn(tdList)
+        `when`(td.findElement(By.tagName("a"))).thenReturn(nameElement)
+        `when`(js.executeScript(anyString(), eq(nameElement))).thenReturn("   ") // vacío
+        `when`(driver.findElements(By.cssSelector("#team-squad-stats tbody tr"))).thenReturn(listOf(row))
+
+        val scraperMock = WhoScoredScraper(driver, isTestMode = true)
+        val result = scraperMock.getPlayersOfTeam("26")
+
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `12 - should handle exception while processing row`() {
+        val driver = mock(WebDriver::class.java, withSettings().extraInterfaces(JavascriptExecutor::class.java))
+        val js = driver as JavascriptExecutor
+        val row = mock(WebElement::class.java)
+        val td = mock(WebElement::class.java)
+
+        // Forzar excepción al buscar celdas
+        `when`(row.findElements(By.tagName("td"))).thenThrow(RuntimeException("boom"))
+        `when`(driver.findElements(By.cssSelector("#team-squad-stats tbody tr"))).thenReturn(listOf(row))
+
+        val scraperMock = WhoScoredScraper(driver, isTestMode = true)
+        val result = scraperMock.getPlayersOfTeam("26")
+
+        assertTrue(result.isEmpty()) // se ignora la fila fallida
+    }
+
+    @Test
+    fun `13 - should return null if not enough columns in player history`() {
+        val driver = mock(WebDriver::class.java, withSettings().extraInterfaces(JavascriptExecutor::class.java))
+        val tbody = mock(WebElement::class.java)
+        val row = mock(WebElement::class.java)
+        `when`(driver.findElement(By.cssSelector("#player-table-statistics-body"))).thenReturn(tbody)
+        `when`(tbody.findElements(By.tagName("tr"))).thenReturn(listOf(row))
+        `when`(row.findElements(By.tagName("td"))).thenReturn(List(5) { mock(WebElement::class.java) }) // < 9 columnas
+
+        val scraperMock = WhoScoredScraper(driver, isTestMode = true)
+        val result = scraperMock.getPlayerHistory("999", "fake")
+
+        assertNull(result)
+    }
+
+    @Test
+    fun `14 - getCellText should return empty when cell is null`() {
+        val js = mock(JavascriptExecutor::class.java)
+        val method = scraper.javaClass.getDeclaredMethod("getCellText", JavascriptExecutor::class.java, WebElement::class.java)
+        method.isAccessible = true
+
+        val result = method.invoke(scraper, js, null) as String
+        assertEquals("", result)
+    }
+
+
 }
