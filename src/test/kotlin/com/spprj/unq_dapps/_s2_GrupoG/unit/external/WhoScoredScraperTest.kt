@@ -11,7 +11,6 @@ import org.openqa.selenium.By
 import org.openqa.selenium.JavascriptExecutor
 import org.openqa.selenium.WebDriver
 import org.openqa.selenium.WebElement
-import org.openqa.selenium.support.ui.WebDriverWait
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -24,7 +23,7 @@ class WhoScoredScraperTest {
     @BeforeEach
     fun setup() {
         MockitoAnnotations.openMocks(this)
-        scraper = spy(WhoScoredScraper())
+        scraper = spy(WhoScoredScraper(isTestMode = true))
     }
 
     @Test
@@ -105,7 +104,6 @@ class WhoScoredScraperTest {
         assertTrue(result.isEmpty())
     }
 
-
     @Test
     fun `06 - should handle null ratings gracefully`() {
         val mockPlayers = listOf(
@@ -141,20 +139,21 @@ class WhoScoredScraperTest {
     fun `08 - getPlayersOfTeam should parse players from mocked elements`() {
         val driver = mock(WebDriver::class.java)
         val js = mock(JavascriptExecutor::class.java)
-        val wait = mock(WebDriverWait::class.java)
-
-        val nameElement = mock(WebElement::class.java)
         val row = mock(WebElement::class.java)
-        val cellName = mock(WebElement::class.java)
-        val tdList = listOf(cellName, mock(WebElement::class.java), mock(WebElement::class.java), mock(WebElement::class.java),
-            mock(WebElement::class.java), mock(WebElement::class.java), mock(WebElement::class.java), mock(WebElement::class.java))
+        val nameElement = mock(WebElement::class.java)
+        val tdName = mock(WebElement::class.java)
+        val tdList = listOf(tdName, mock(WebElement::class.java), mock(WebElement::class.java),
+            mock(WebElement::class.java), mock(WebElement::class.java), mock(WebElement::class.java),
+            mock(WebElement::class.java), mock(WebElement::class.java))
 
+        // Simula estructura HTML mínima
         `when`(row.findElements(By.tagName("td"))).thenReturn(tdList)
-        `when`(cellName.findElement(By.tagName("a"))).thenReturn(nameElement)
+        `when`(tdName.findElement(By.tagName("a"))).thenReturn(nameElement)
         `when`(js.executeScript(anyString(), eq(nameElement))).thenReturn("Lionel Messi")
         `when`(driver.findElements(By.cssSelector("#team-squad-stats tbody tr"))).thenReturn(listOf(row))
+        `when`(driver as JavascriptExecutor).thenReturn(js)
 
-        val scraperMock = WhoScoredScraper(driver)
+        val scraperMock = WhoScoredScraper(driver, isTestMode = true)
         val result = scraperMock.getPlayersOfTeam("26")
 
         assertTrue(result.any { it.name.contains("Messi") })
@@ -168,11 +167,9 @@ class WhoScoredScraperTest {
         `when`(driver.findElement(By.cssSelector("#player-table-statistics-body"))).thenReturn(tbody)
         `when`(tbody.findElements(By.tagName("tr"))).thenReturn(emptyList())
 
-        val scraperMock = WhoScoredScraper(driver)
+        val scraperMock = WhoScoredScraper(driver, isTestMode = true)
         val result = scraperMock.getPlayerHistory("123", "fake-slug")
 
         assertNull(result)
     }
-
-
 }
