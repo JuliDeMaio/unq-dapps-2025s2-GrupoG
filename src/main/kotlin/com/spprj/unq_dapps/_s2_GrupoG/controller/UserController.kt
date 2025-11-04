@@ -57,25 +57,17 @@ class UserController(
         else ResponseEntity.notFound().build()
     }
 
-    @GetMapping("/{userId}/queries")
-    @Operation(summary = "Obtener las consultas realizadas por un usuario en una fecha específica")
+    @GetMapping("/{id}/queries")
     fun getUserQueries(
-        @PathVariable userId: Long,
+        @PathVariable id: Long,
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): ResponseEntity<Map<String, Any>> {
-        val logs = userService.getUserQueriesByDate(userId, date)
+        val queries = userService.getUserQueriesByDate(id, date)
 
         val response = mapOf(
-            "userId" to userId,
+            "userId" to id,
             "date" to date,
-            "queries" to logs.map {
-                mapOf(
-                    "endpoint" to it.endpoint,
-                    "method" to it.method,
-                    "requestBody" to it.requestBody,
-                    "responseBody" to it.responseBody
-                )
-            }
+            "queries" to queries
         )
 
         return ResponseEntity.ok(response)

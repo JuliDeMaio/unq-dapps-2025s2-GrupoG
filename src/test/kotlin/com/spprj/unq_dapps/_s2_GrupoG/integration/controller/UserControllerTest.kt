@@ -147,16 +147,14 @@ class UserControllerTest {
     @Test
     fun `08 - should return user queries by date`() {
         val logs = listOf(
-            UserQueryLog(
-                id = 1L,
-                userId = 1L,
-                endpoint = "/teams",
-                method = "GET",
-                requestBody = null,
-                responseBody = "{}",
-                queryDate = LocalDate.now()
+            mapOf(
+                "endpoint" to "/teams",
+                "method" to "GET",
+                "requestBody" to null,
+                "responseBody" to mapOf<String, Any>()
             )
         )
+
         Mockito.`when`(userService.getUserQueriesByDate(1L, LocalDate.now())).thenReturn(logs)
 
         mockMvc.perform(
@@ -167,6 +165,7 @@ class UserControllerTest {
             .andExpect(jsonPath("$.userId").value(1))
             .andExpect(jsonPath("$.queries[0].endpoint").value("/teams"))
     }
+
 }
 
 /** 🔧 Helper para evitar NPE con Mockito + Kotlin **/

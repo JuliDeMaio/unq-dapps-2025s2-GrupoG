@@ -61,8 +61,27 @@ class UserServiceImpl(
         userQueryLogRepository.save(log)
     }
 
-    override fun getUserQueriesByDate(userId: Long, date: LocalDate): List<UserQueryLog> {
-        return userQueryLogRepository.findByUserIdAndQueryDate(userId, date)
+    override fun getUserQueriesByDate(userId: Long, date: LocalDate): List<Map<String, Any?>> {
+        val logs = userQueryLogRepository.findByUserIdAndQueryDate(userId, date)
+
+        return logs.map { log ->
+            mapOf(
+                "endpoint" to log.endpoint,
+                "method" to log.method,
+                "requestBody" to parseJsonSafely(log.requestBody),
+                "responseBody" to parseJsonSafely(log.responseBody)
+            )
+        }
     }
+
+    private fun parseJsonSafely(json: String?): Any? {
+        if (json.isNullOrBlank()) return null
+        return try {
+            objectMapper.readValue(json, Any::class.java)
+        } catch (_: Exception) {
+            json // si no es un JSON válido, lo devuelve como texto plano
+        }
+    }
+
 
 }

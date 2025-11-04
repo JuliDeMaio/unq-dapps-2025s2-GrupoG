@@ -19,6 +19,6 @@ interface UserService {
         responseBody: Any?
     )
 
-    fun getUserQueriesByDate(userId: Long, date: LocalDate): List<UserQueryLog>
+    fun getUserQueriesByDate(userId: Long, date: LocalDate): List<Map<String, Any?>>
 
 }
