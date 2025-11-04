@@ -17,6 +17,10 @@ import java.time.Duration
 @Component
 class WhoScoredScraper {
 
+    companion object {
+        private const val INNER_TEXT_SCRIPT = "return arguments[0].innerText;"
+    }
+
     private val driver: WebDriver by lazy {
         WebDriverManager.chromedriver().setup()
 
@@ -41,7 +45,7 @@ class WhoScoredScraper {
     private fun getCellText(js: JavascriptExecutor, cell: WebElement?): String {
         if (cell == null) return ""
         return try {
-            (js.executeScript("return arguments[0].innerText;", cell) as String).trim()
+            (js.executeScript(INNER_TEXT_SCRIPT, cell) as String).trim()
         } catch (e: Exception) {
             ""
         }
@@ -70,7 +74,7 @@ class WhoScoredScraper {
                 if (cells.isEmpty()) continue
 
                 val nameElement = cells[0].findElement(By.tagName("a"))
-                val playerName = (js.executeScript("return arguments[0].innerText;", nameElement) as String)
+                val playerName = (js.executeScript(INNER_TEXT_SCRIPT, nameElement) as String)
                     .trim()
                     .replace(Regex("^\\d+\\s*"), "")
                 if (playerName.isBlank()) continue
@@ -105,6 +109,7 @@ class WhoScoredScraper {
     fun getPlayerHistory(playerId: String, playerSlug: String): PlayerHistoryDTO? {
         val url = "https://www.whoscored.com/players/$playerId/history/$playerSlug"
         println("📖 Opening player history page: $url")
+        @Suppress("ReplaceGetOrSet")
         driver.get(url)
 
         wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#player-table-statistics-body")))
@@ -120,7 +125,7 @@ class WhoScoredScraper {
         val js = driver as JavascriptExecutor
 
         fun cellText(cell: WebElement?) = try {
-            (js.executeScript("return arguments[0].innerText;", cell) as String).trim()
+            (js.executeScript(INNER_TEXT_SCRIPT, cell) as String).trim()
         } catch (_: Exception) { "" }
 
         val cells = lastRow.findElements(By.tagName("td"))
