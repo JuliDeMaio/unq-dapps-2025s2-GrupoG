@@ -18,6 +18,11 @@ repositories {
 	mavenCentral()
 }
 
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
+
+
 val seleniumVersion = "4.26.0"
 
 dependencies {
@@ -49,7 +54,13 @@ dependencies {
     runtimeOnly("com.mysql:mysql-connector-j")
 
     // --- Testing ---
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-test") {
+        exclude(group = "org.mockito")
+    }
+    testImplementation("io.mockk:mockk:1.13.12")
+    testImplementation("org.jetbrains.kotlin:kotlin-test")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
 }
 sonar {
 	properties {
