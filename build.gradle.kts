@@ -18,7 +18,15 @@ repositories {
 	mavenCentral()
 }
 
+// --- Versiones centralizadas ---
 val seleniumVersion = "4.26.0"
+val springdocVersion = "2.3.0"
+val webdrivermanagerVersion = "5.9.2"
+val jsoupVersion = "1.18.1"
+val jjwtVersion = "0.11.5"
+val mockitoKotlinVersion = "5.2.1"
+val mockkVersion = "1.13.12"
+
 
 dependencies {
     // --- Spring Boot ---
@@ -28,14 +36,14 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
-    implementation("io.github.bonigarcia:webdrivermanager:5.9.2")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springdocVersion")
 
     // --- Utilidades ---
-    implementation("org.jsoup:jsoup:1.18.1")
+    implementation("io.github.bonigarcia:webdrivermanager:$webdrivermanagerVersion")
+    implementation("org.jsoup:jsoup:$jsoupVersion")
 
     // --- JWT ---
-    implementation("io.jsonwebtoken:jjwt-api:0.11.5")
+    implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
 
     // --- Selenium ---
     implementation(platform("org.seleniumhq.selenium:selenium-bom:$seleniumVersion"))
@@ -44,17 +52,18 @@ dependencies {
     implementation("org.seleniumhq.selenium:selenium-support")
 
     // --- Runtime ---
-    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
-    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
     runtimeOnly("com.mysql:mysql-connector-j")
 
     // --- Testing ---
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion")
     testImplementation("com.h2database:h2")
-    testImplementation("io.mockk:mockk:1.13.12")
+    testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation(kotlin("test"))
 }
+
 sonar {
 	properties {
 		property("sonar.projectKey", "JuliDeMaio_unq-dapps-2025s2-GrupoG")
