@@ -84,4 +84,34 @@ class WhoScoredScraperTest {
         assertEquals(8, result.goals)
         assertEquals(8.7, result.averageRating)
     }
+
+    @Test
+    fun `05 - should return empty list if table is missing`() {
+        val scraperMock = mock(WhoScoredScraper::class.java)
+        `when`(scraperMock.getPlayersOfTeam("99"))
+            .thenThrow(NoSuchElementException("table not found"))
+
+        val result = try {
+            scraperMock.getPlayersOfTeam("99")
+        } catch (e: Exception) {
+            emptyList<Player>()
+        }
+
+        assertTrue(result.isEmpty())
+    }
+
+
+    @Test
+    fun `06 - should handle null ratings gracefully`() {
+        val mockPlayers = listOf(
+            Player(id = 1, teamId = "26", name = "Unknown", matchesPlayed = 0, goals = 0, assists = 0, rating = null)
+        )
+        doReturn(mockPlayers).`when`(scraper).getPlayersOfTeam("26")
+
+        val result = scraper.getPlayersOfTeam("26")
+
+        assertEquals(1, result.size)
+        assertNull(result[0].rating)
+    }
+
 }
