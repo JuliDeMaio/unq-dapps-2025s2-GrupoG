@@ -15,29 +15,35 @@ import org.springframework.stereotype.Component
 import java.time.Duration
 
 @Component
-class WhoScoredScraper {
+class WhoScoredScraper(
+    private val customDriver: WebDriver? = null // 👈 Permite inyectar mocks o drivers de test
+) {
 
     companion object {
         private const val INNER_TEXT_SCRIPT = "return arguments[0].innerText;"
     }
 
     private val driver: WebDriver by lazy {
-        WebDriverManager.chromedriver().setup()
-
-        val options = ChromeOptions().apply {
-            addArguments("--disable-blink-features=AutomationControlled")
-            addArguments("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-                    "AppleWebKit/537.36 (KHTML, like Gecko) " +
-                    "Chrome/140.0.7339.208 Safari/537.36")
-            addArguments("--headless=new")
-            addArguments("--no-sandbox")
-            addArguments("--disable-dev-shm-usage")
-            addArguments("--disable-extensions")
-            addArguments("--remote-allow-origins=*")
-            addArguments("--disable-gpu")
-            addArguments("--window-size=1920,1080")
+        // Si se pasa un driver desde test, lo usa; sino crea el ChromeDriver real
+        customDriver ?: run {
+            WebDriverManager.chromedriver().setup()
+            val options = ChromeOptions().apply {
+                addArguments("--disable-blink-features=AutomationControlled")
+                addArguments(
+                    "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+                            "AppleWebKit/537.36 (KHTML, like Gecko) " +
+                            "Chrome/140.0.7339.208 Safari/537.36"
+                )
+                addArguments("--headless=new")
+                addArguments("--no-sandbox")
+                addArguments("--disable-dev-shm-usage")
+                addArguments("--disable-extensions")
+                addArguments("--remote-allow-origins=*")
+                addArguments("--disable-gpu")
+                addArguments("--window-size=1920,1080")
+            }
+            ChromeDriver(options)
         }
-        ChromeDriver(options)
     }
 
     private val wait = WebDriverWait(driver, Duration.ofSeconds(30))
@@ -89,7 +95,7 @@ class WhoScoredScraper {
                 players.add(
                     Player(
                         id = null,
-                        teamId = teamId, // 👈 agregado
+                        teamId = teamId,
                         name = playerName,
                         matchesPlayed = matches,
                         goals = goals,
@@ -121,12 +127,14 @@ class WhoScoredScraper {
             return null
         }
 
-        val lastRow = rows.last() // 👈 toma solo la última fila
+        val lastRow = rows.last()
         val js = driver as JavascriptExecutor
 
         fun cellText(cell: WebElement?) = try {
             (js.executeScript(INNER_TEXT_SCRIPT, cell) as String).trim()
-        } catch (_: Exception) { "" }
+        } catch (_: Exception) {
+            ""
+        }
 
         val cells = lastRow.findElements(By.tagName("td"))
         if (cells.size < 9) {
@@ -134,12 +142,12 @@ class WhoScoredScraper {
             return null
         }
 
-        val appearances   = cellText(cells.getOrNull(2)).replace(",", "").toIntOrNull() ?: 0
+        val appearances = cellText(cells.getOrNull(2)).replace(",", "").toIntOrNull() ?: 0
         val minutesPlayed = cellText(cells.getOrNull(3)).replace(",", "").toIntOrNull() ?: 0
-        val goals         = cellText(cells.getOrNull(4)).replace(",", "").toIntOrNull() ?: 0
-        val assists       = cellText(cells.getOrNull(5)).replace(",", "").toIntOrNull() ?: 0
-        val yellowCards   = cellText(cells.getOrNull(6)).replace(",", "").toIntOrNull() ?: 0
-        val redCards      = cellText(cells.getOrNull(7)).replace(",", "").toIntOrNull() ?: 0
+        val goals = cellText(cells.getOrNull(4)).replace(",", "").toIntOrNull() ?: 0
+        val assists = cellText(cells.getOrNull(5)).replace(",", "").toIntOrNull() ?: 0
+        val yellowCards = cellText(cells.getOrNull(6)).replace(",", "").toIntOrNull() ?: 0
+        val redCards = cellText(cells.getOrNull(7)).replace(",", "").toIntOrNull() ?: 0
         val averageRating = cellText(cells.getOrNull(12)).replace(",", ".").toDoubleOrNull()
 
         val dto = PlayerHistoryDTO(
@@ -155,7 +163,4 @@ class WhoScoredScraper {
         println("✅ Historical stats for player $playerId → $dto")
         return dto
     }
-
-
-
 }

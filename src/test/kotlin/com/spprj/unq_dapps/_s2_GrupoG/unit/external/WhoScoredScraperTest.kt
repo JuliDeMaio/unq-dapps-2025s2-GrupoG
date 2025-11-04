@@ -7,6 +7,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
 import org.mockito.MockitoAnnotations
+import org.openqa.selenium.By
+import org.openqa.selenium.JavascriptExecutor
+import org.openqa.selenium.WebDriver
+import org.openqa.selenium.WebElement
+import org.openqa.selenium.support.ui.WebDriverWait
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -113,5 +118,61 @@ class WhoScoredScraperTest {
         assertEquals(1, result.size)
         assertNull(result[0].rating)
     }
+
+    @Test
+    fun `07 - getCellText should return text or empty on exception`() {
+        val js = mock(JavascriptExecutor::class.java)
+        val cell = mock(WebElement::class.java)
+
+        `when`(js.executeScript(anyString(), eq(cell))).thenReturn("  Messi ")
+        val text = scraper.javaClass.getDeclaredMethod("getCellText", JavascriptExecutor::class.java, WebElement::class.java)
+            .apply { isAccessible = true }
+            .invoke(scraper, js, cell) as String
+        assertEquals("Messi", text)
+
+        `when`(js.executeScript(anyString(), eq(cell))).thenThrow(RuntimeException("boom"))
+        val text2 = scraper.javaClass.getDeclaredMethod("getCellText", JavascriptExecutor::class.java, WebElement::class.java)
+            .apply { isAccessible = true }
+            .invoke(scraper, js, cell) as String
+        assertEquals("", text2)
+    }
+
+    @Test
+    fun `08 - getPlayersOfTeam should parse players from mocked elements`() {
+        val driver = mock(WebDriver::class.java)
+        val js = mock(JavascriptExecutor::class.java)
+        val wait = mock(WebDriverWait::class.java)
+
+        val nameElement = mock(WebElement::class.java)
+        val row = mock(WebElement::class.java)
+        val cellName = mock(WebElement::class.java)
+        val tdList = listOf(cellName, mock(WebElement::class.java), mock(WebElement::class.java), mock(WebElement::class.java),
+            mock(WebElement::class.java), mock(WebElement::class.java), mock(WebElement::class.java), mock(WebElement::class.java))
+
+        `when`(row.findElements(By.tagName("td"))).thenReturn(tdList)
+        `when`(cellName.findElement(By.tagName("a"))).thenReturn(nameElement)
+        `when`(js.executeScript(anyString(), eq(nameElement))).thenReturn("Lionel Messi")
+        `when`(driver.findElements(By.cssSelector("#team-squad-stats tbody tr"))).thenReturn(listOf(row))
+
+        val scraperMock = WhoScoredScraper(driver)
+        val result = scraperMock.getPlayersOfTeam("26")
+
+        assertTrue(result.any { it.name.contains("Messi") })
+    }
+
+    @Test
+    fun `09 - getPlayerHistory should return null if no rows`() {
+        val driver = mock(WebDriver::class.java)
+        val tbody = mock(WebElement::class.java)
+
+        `when`(driver.findElement(By.cssSelector("#player-table-statistics-body"))).thenReturn(tbody)
+        `when`(tbody.findElements(By.tagName("tr"))).thenReturn(emptyList())
+
+        val scraperMock = WhoScoredScraper(driver)
+        val result = scraperMock.getPlayerHistory("123", "fake-slug")
+
+        assertNull(result)
+    }
+
 
 }
