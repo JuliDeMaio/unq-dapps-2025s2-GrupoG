@@ -3,7 +3,6 @@ package com.spprj.unq_dapps._s2_GrupoG.service.impl
 import com.spprj.unq_dapps._s2_GrupoG.model.MatchPredictionResult
 import com.spprj.unq_dapps._s2_GrupoG.model.Team
 import org.springframework.stereotype.Service
-import kotlin.math.abs
 import kotlin.math.exp
 import kotlin.math.sqrt
 
