@@ -61,6 +61,7 @@ class WhoScoredScraper(
     fun getPlayersOfTeam(teamId: String): List<Player> {
         val url = "https://www.whoscored.com/teams/$teamId/show"
         println("Opening team page: $url")
+        @Suppress("ReplaceGetOrSet")
         driver.get(url)
 
         if (!isTestMode) {
@@ -68,12 +69,12 @@ class WhoScoredScraper(
         }
 
         val rows: List<WebElement> = if (!isTestMode) {
-            wait!!.until {
-                val elements = driver.findElements(By.cssSelector("#team-squad-stats tbody tr"))
+            wait!!.until<List<WebElement>?> {
+                val elements = driver.findElements(By.cssSelector("#team-squad-stats tbody tr")).toList()
                 if (elements.isNotEmpty()) elements else null
-            }
+            } ?: emptyList() // 👈 evita null devolviendo lista vacía
         } else {
-            driver.findElements(By.cssSelector("#team-squad-stats tbody tr"))
+            driver.findElements(By.cssSelector("#team-squad-stats tbody tr")).toList()
         }
 
         val players = mutableListOf<Player>()
@@ -83,7 +84,7 @@ class WhoScoredScraper(
 
         for (row in rows) {
             try {
-                val cells = row.findElements(By.tagName("td"))
+                val cells = row.findElements(By.tagName("td")).toList()
                 if (cells.isEmpty()) continue
 
                 val nameElement = cells[0].findElement(By.tagName("a"))
