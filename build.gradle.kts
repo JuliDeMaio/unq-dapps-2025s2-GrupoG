@@ -49,6 +49,7 @@ dependencies {
 
 	// Testing
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
 	testImplementation("com.h2database:h2")
 	testImplementation("io.mockk:mockk:1.13.12")
 	testImplementation(kotlin("test"))
@@ -59,6 +60,7 @@ sonar {
 		property("sonar.projectKey", "JuliDeMaio_unq-dapps-2025s2-GrupoG")
 		property("sonar.organization", "julidemaio")
 		property("sonar.host.url", "https://sonarcloud.io")
+		property("sonar.exclusions", "**/dto/**, **/config/**, **/model/**")
 	}
 }
 

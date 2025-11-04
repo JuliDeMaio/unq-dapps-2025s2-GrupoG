@@ -11,11 +11,12 @@ import org.springframework.web.client.RestTemplate
 @Service
 class FootballDataService(
     @Value("\${footballdata.api.base-url}") private val apiUrl: String,
-    @Value("\${footballdata.api.token}") private val apiKey: String
+    @Value("\${footballdata.api.token}") private val apiKey: String,
+    @Suppress("SpringJavaInjectionPointsAutowiringInspection")
+    private val restTemplate: RestTemplate = RestTemplate()
 ) {
 
     fun getUpcomingMatches(teamId: String): List<UpcomingMatchDTO> {
-        val restTemplate = RestTemplate()
         val url = "$apiUrl/teams/$teamId/matches?status=SCHEDULED"
 
         val headers = HttpHeaders()

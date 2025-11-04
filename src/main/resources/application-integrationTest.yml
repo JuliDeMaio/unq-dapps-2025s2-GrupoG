@@ -1,0 +1,4 @@
+footballdata:
+  api:
+    base-url: https://fake.api
+    token: fake-token
