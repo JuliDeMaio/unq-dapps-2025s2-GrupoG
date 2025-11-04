@@ -18,43 +18,39 @@ repositories {
 	mavenCentral()
 }
 
+val seleniumVersion = "4.26.0"
+
 dependencies {
-	// Spring Boot starters
-	implementation("org.springframework.boot:spring-boot-starter-web")
-	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-	implementation("org.springframework.boot:spring-boot-starter-security")
-	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-	implementation("org.jetbrains.kotlin:kotlin-reflect")
-	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
-	implementation("io.github.bonigarcia:webdrivermanager:5.9.2")
-	implementation("org.springframework.boot:spring-boot-starter-aop")
+    // --- Spring Boot ---
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-aop")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
+    implementation("io.github.bonigarcia:webdrivermanager:5.9.2")
 
-	// Utilidades
-	implementation("org.jsoup:jsoup:1.18.1")
+    // --- Utilidades ---
+    implementation("org.jsoup:jsoup:1.18.1")
 
-	// JWT
-	implementation("io.jsonwebtoken:jjwt-api:0.11.5")
-	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
-	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
+    // --- JWT ---
+    implementation("io.jsonwebtoken:jjwt-api:0.11.5")
 
-	// Selenium (usar siempre la misma versión, la última estable)
-	val seleniumVersion = "4.26.0"
-	implementation(platform("org.seleniumhq.selenium:selenium-bom:$seleniumVersion"))
-	implementation("org.seleniumhq.selenium:selenium-java")
-	implementation("org.seleniumhq.selenium:selenium-chrome-driver")
-	implementation("org.seleniumhq.selenium:selenium-support")
+    // --- Selenium ---
+    implementation(platform("org.seleniumhq.selenium:selenium-bom:$seleniumVersion"))
+    implementation("org.seleniumhq.selenium:selenium-java")
+    implementation("org.seleniumhq.selenium:selenium-chrome-driver")
+    implementation("org.seleniumhq.selenium:selenium-support")
 
-	// DB
-	runtimeOnly("com.mysql:mysql-connector-j")
+    // --- Runtime ---
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
+    runtimeOnly("com.mysql:mysql-connector-j")
 
-	// Testing
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
-	testImplementation("com.h2database:h2")
-	testImplementation("io.mockk:mockk:1.13.12")
-	testImplementation(kotlin("test"))
+    // --- Testing ---
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
-
 sonar {
 	properties {
 		property("sonar.projectKey", "JuliDeMaio_unq-dapps-2025s2-GrupoG")
