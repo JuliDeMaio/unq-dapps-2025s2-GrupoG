@@ -94,4 +94,20 @@ class TeamControllerTest {
             .andExpect(jsonPath("$[0].name").value("Lionel Messi"))
             .andExpect(jsonPath("$[1].name").value("Ángel Di María"))
     }
+
+    @Test
+    fun `02 - should return empty list when team has no players`() {
+        val fakeTeamId = "999"
+
+        `when`(playerService.getPlayersFromDb(fakeTeamId)).thenReturn(emptyList())
+
+        mockMvc.perform(
+            get("/teams/$fakeTeamId/players")
+                .header("Authorization", "Bearer $token")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.length()").value(0))
+    }
+
 }
