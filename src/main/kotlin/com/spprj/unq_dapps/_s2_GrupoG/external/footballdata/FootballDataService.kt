@@ -20,7 +20,7 @@ class FootballDataService(
         val url = "$apiUrl/teams/$teamId/matches?status=SCHEDULED"
 
         val headers = HttpHeaders()
-        headers.set("X-Auth-Token", apiKey)
+        headers["X-Auth-Token"] = apiKey
 
         val entity = HttpEntity<String>(headers)
 
@@ -31,7 +31,8 @@ class FootballDataService(
             Map::class.java
         )
 
-        val matches = response.body?.get("matches") as? List<Map<String, Any>> ?: return emptyList()
+        @Suppress("UNCHECKED_CAST")
+        val matches = (response.body?.get("matches") as? List<*>)?.filterIsInstance<Map<String, Any>>() ?: return emptyList()
 
         return matches.map {
             UpcomingMatchDTO(

@@ -6,8 +6,6 @@ import org.aspectj.lang.annotation.AfterReturning
 import org.aspectj.lang.annotation.Aspect
 import org.aspectj.lang.annotation.Pointcut
 import org.springframework.stereotype.Component
-import org.springframework.web.bind.annotation.*
-import java.time.LocalDate
 
 @Aspect
 @Component
@@ -20,7 +18,9 @@ class QueryLoggingAspect(
             "@annotation(org.springframework.web.bind.annotation.PostMapping) || " +
             "@annotation(org.springframework.web.bind.annotation.PutMapping) || " +
             "@annotation(org.springframework.web.bind.annotation.DeleteMapping)")
-    fun anyEndpoint() {}
+    fun anyEndpoint() {
+        // Intencionalmente vacío: define el pointcut sin lógica adicional
+    }
 
     @AfterReturning(pointcut = "anyEndpoint()", returning = "result")
     fun logQuery(joinPoint: JoinPoint, result: Any?) {
