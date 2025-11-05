@@ -13,7 +13,6 @@ class QueryLoggingAspect(
     private val userService: UserService
 ) {
 
-    // 🎯 Aplica a cualquier método público anotado con @GetMapping, @PostMapping, @PutMapping o @DeleteMapping
     @Pointcut("@annotation(org.springframework.web.bind.annotation.GetMapping) || " +
             "@annotation(org.springframework.web.bind.annotation.PostMapping) || " +
             "@annotation(org.springframework.web.bind.annotation.PutMapping) || " +
@@ -28,7 +27,7 @@ class QueryLoggingAspect(
             val methodSignature = joinPoint.signature
             val endpoint = "${methodSignature.declaringType.simpleName}.${methodSignature.name}"
 
-            // 👇 Evitamos loguear el propio endpoint de consultas
+            // Evitamos loguear el propio endpoint de consultas
             if (endpoint.contains("UserController.getUserQueries")) {
                 return
             }

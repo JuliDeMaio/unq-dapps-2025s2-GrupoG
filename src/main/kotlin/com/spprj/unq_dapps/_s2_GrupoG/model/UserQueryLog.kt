@@ -5,7 +5,7 @@ import java.time.LocalDate
 
 @Entity
 @Table(name = "user_queries")
-data class UserQueryLog(
+open class UserQueryLog(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,

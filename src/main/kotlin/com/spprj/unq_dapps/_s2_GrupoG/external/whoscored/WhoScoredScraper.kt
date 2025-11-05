@@ -17,7 +17,7 @@ import java.time.Duration
 @Component
 class WhoScoredScraper(
     private val customDriver: WebDriver? = null,
-    private val isTestMode: Boolean = false // 👈 Nuevo flag para evitar Selenium real en tests
+    private val isTestMode: Boolean = false
 ) {
 
     companion object {
