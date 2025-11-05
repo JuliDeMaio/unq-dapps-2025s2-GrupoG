@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.test.context.ActiveProfiles
 
 @ActiveProfiles("unitTest")
-class UserRepositoryUnitTest {
+class UserRepositoryTest {
 
     private val userRepository = mockk<UserRepository>()
 
@@ -23,4 +23,12 @@ class UserRepositoryUnitTest {
         assertNotNull(found)
         assertEquals("RepoUser", found?.name)
     }
+
+    @Test
+    fun `02 - should return null when user not found`() {
+        every { userRepository.findByEmail("notfound@test.com") } returns null
+        val found = userRepository.findByEmail("notfound@test.com")
+        assertNull(found)
+    }
+
 }
