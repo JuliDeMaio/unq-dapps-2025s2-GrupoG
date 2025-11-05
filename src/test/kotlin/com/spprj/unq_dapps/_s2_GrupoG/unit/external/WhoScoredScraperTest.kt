@@ -169,7 +169,7 @@ class WhoScoredScraperTest {
         `when`(tbody.findElements(By.tagName("tr"))).thenReturn(emptyList())
 
         val scraperMock = WhoScoredScraper(driver, isTestMode = true)
-        val result = scraperMock.getPlayerHistory("123", "fake-slug")
+        val result = scraperMock.getPlayerHistory("123", "fake-playerName")
 
         assertNull(result)
     }

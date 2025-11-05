@@ -121,8 +121,8 @@ class WhoScoredScraper(
     }
 
     @Suppress("ReplaceGetOrSet")
-    fun getPlayerHistory(playerId: String, playerSlug: String): PlayerHistoryDTO? {
-        val url = "https://www.whoscored.com/players/$playerId/history/$playerSlug"
+    fun getPlayerHistory(playerId: String, playerName: String): PlayerHistoryDTO? {
+        val url = "https://www.whoscored.com/players/$playerId/history/$playerName"
         println("📖 Opening player history page: $url")
         driver.get(url)
 

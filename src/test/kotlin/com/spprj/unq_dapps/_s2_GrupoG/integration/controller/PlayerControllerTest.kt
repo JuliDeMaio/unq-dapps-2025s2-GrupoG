@@ -72,7 +72,7 @@ class PlayerControllerTest {
     }
 
     @Test
-    fun `03 - should return 400 when slug missing`() {
+    fun `03 - should return 400 when player name missing`() {
         mockMvc.perform(
             get("/players/123/history/")
                 .contentType(MediaType.APPLICATION_JSON)

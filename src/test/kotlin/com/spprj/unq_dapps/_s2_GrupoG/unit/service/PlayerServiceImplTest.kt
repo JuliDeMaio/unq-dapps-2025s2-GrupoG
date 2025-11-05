@@ -73,7 +73,7 @@ class PlayerServiceImplTest {
     @Test
     fun `04 - should get player history from scraper`() {
         val playerId = "123"
-        val slug = "messi"
+        val playerName = "messi"
         val history = PlayerHistoryDTO(
             appearances = 10,
             goals = 8,
@@ -84,9 +84,9 @@ class PlayerServiceImplTest {
             averageRating = 8.9
         )
 
-        Mockito.`when`(whoScoredScraper.getPlayerHistory(eq(playerId), eq(slug))).thenReturn(history)
+        Mockito.`when`(whoScoredScraper.getPlayerHistory(eq(playerId), eq(playerName))).thenReturn(history)
 
-        val result = playerService.getPlayerHistory(playerId, slug)
+        val result = playerService.getPlayerHistory(playerId, playerName)
 
         assertNotNull(result)
         assertEquals(8, result?.goals)

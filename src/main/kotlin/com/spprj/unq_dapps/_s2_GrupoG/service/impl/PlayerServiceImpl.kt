@@ -44,7 +44,7 @@ class PlayerServiceImpl(
         return playerRepository.findByTeamId(teamId)
     }
 
-    fun getPlayerHistory(playerId: String, playerSlug: String): PlayerHistoryDTO? {
-        return whoScoredScraper.getPlayerHistory(playerId, playerSlug)
+    fun getPlayerHistory(playerId: String, playerName: String): PlayerHistoryDTO? {
+        return whoScoredScraper.getPlayerHistory(playerId, playerName)
     }
 }

@@ -16,13 +16,13 @@ class PlayerController(
     private val playerService: PlayerServiceImpl
 ) {
 
-    @GetMapping("/{playerId}/history/{slug}")
+    @GetMapping("/{playerId}/history/{playerName}")
     @Operation(summary = "Historial completo de un jugador (datos históricos desde WhoScored)")
     fun getPlayerHistory(
         @PathVariable playerId: String,
-        @PathVariable slug: String
+        @PathVariable playerName: String
     ): ResponseEntity<PlayerHistoryDTO?> {
-        val history = playerService.getPlayerHistory(playerId, slug)
+        val history = playerService.getPlayerHistory(playerId, playerName)
         return ResponseEntity.ok(history)
     }
 }
