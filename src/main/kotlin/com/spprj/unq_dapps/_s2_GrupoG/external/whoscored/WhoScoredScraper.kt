@@ -58,10 +58,10 @@ class WhoScoredScraper(
         }
     }
 
+    @Suppress("ReplaceGetOrSet")
     fun getPlayersOfTeam(teamId: String): List<Player> {
         val url = "https://www.whoscored.com/teams/$teamId/show"
         println("Opening team page: $url")
-        @Suppress("ReplaceGetOrSet")
         driver.get(url)
 
         if (!isTestMode) {
@@ -120,10 +120,10 @@ class WhoScoredScraper(
         return players
     }
 
+    @Suppress("ReplaceGetOrSet")
     fun getPlayerHistory(playerId: String, playerSlug: String): PlayerHistoryDTO? {
         val url = "https://www.whoscored.com/players/$playerId/history/$playerSlug"
         println("📖 Opening player history page: $url")
-        @Suppress("ReplaceGetOrSet")
         driver.get(url)
 
         if (!isTestMode) {
@@ -135,7 +135,7 @@ class WhoScoredScraper(
         }
 
         val tbody = driver.findElement(By.cssSelector("#player-table-statistics-body"))
-        val rows = tbody.findElements(By.tagName("tr"))
+        val rows = tbody.findElements(By.tagName("tr")).toList()
         if (rows.isEmpty()) {
             println("⚠️ No rows found for player $playerId")
             return null
@@ -150,7 +150,7 @@ class WhoScoredScraper(
             ""
         }
 
-        val cells = lastRow.findElements(By.tagName("td"))
+        val cells = lastRow.findElements(By.tagName("td")).toList()
         if (cells.size < 9) {
             println("⚠️ Not enough columns for player $playerId")
             return null
