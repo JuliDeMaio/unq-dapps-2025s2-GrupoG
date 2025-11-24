@@ -28,7 +28,6 @@
 - Configuración en **GitHub Actions**  
 - Build corriendo y **SUCCESS**  
 - Registro en **SonarCloud** con *issues* menores a 10  
-- **Deploy automático en Render** usando GitHub Actions  
 - Código siguiendo **estándares de Clean Code**  
 - **JWT implementado**  
 - Configuración de **Swagger (v3)** en el backend  
