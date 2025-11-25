@@ -38,9 +38,14 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springdocVersion")
 
+
     // --- Utilidades ---
     implementation("io.github.bonigarcia:webdrivermanager:$webdrivermanagerVersion")
     implementation("org.jsoup:jsoup:$jsoupVersion")
+
+	// --- Métricas y monitoreo ---
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
+	implementation("io.micrometer:micrometer-registry-prometheus")
 
     // --- JWT ---
     implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
