@@ -17,5 +17,9 @@ open class Player(
     val matchesPlayed: Int,
     val goals: Int,
     val assists: Int,
-    val rating: Double?
+    val rating: Double?,
+
+    val minutesPlayed: Int,
+    val yellowCards: Int,
+    val redCards: Int
 )

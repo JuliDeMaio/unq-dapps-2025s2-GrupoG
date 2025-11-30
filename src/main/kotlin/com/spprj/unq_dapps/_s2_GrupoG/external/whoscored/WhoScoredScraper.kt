@@ -108,7 +108,10 @@ class WhoScoredScraper(
                         matchesPlayed = matches,
                         goals = goals,
                         assists = assists,
-                        rating = rating
+                        rating = rating,
+                        minutesPlayed = 0,
+                        yellowCards = 0,
+                        redCards = 0
                     )
                 )
             } catch (e: Exception) {

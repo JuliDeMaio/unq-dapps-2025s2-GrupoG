@@ -16,9 +16,9 @@ class PlayerServiceImpl(
     @Transactional
     fun populateDataBaseFromScrapperService(teamId: String) {
 
-        val players: List<Player> = whoScoredScraper.getPlayersOfTeam(teamId)
+        val basePlayers: List<Player> = whoScoredScraper.getPlayersOfTeam(teamId)
 
-        if (players.isEmpty()) {
+        if (basePlayers.isEmpty()) {
             return
         }
 
@@ -26,18 +26,41 @@ class PlayerServiceImpl(
         val deleted = playerRepository.findByTeamId(teamId)
         playerRepository.deleteAll(deleted)
 
-        // Guardo nuevos jugadores en la base
-        val saved = playerRepository.saveAll(players.map { p ->
-            Player(
-                id = null, // JPA genera el ID
+        val playersToSave = mutableListOf<Player>()
+
+        for (p in basePlayers) {
+
+            val playerNameSlug = p.name.lowercase()
+                .replace(" ", "-")
+                .replace(".", "")
+                .replace("'", "")
+
+            // Atención: no siempre coincide el id de WhoScored con el jugador.
+            // Si no tenés el ID del jugador, NO se puede scrapear la historia.
+            // Voy a intentar usar el name slug (tu endpoint lo usa así).
+            val history = whoScoredScraper.getPlayerHistory(p.id?.toString() ?: "", playerNameSlug)
+
+            val minutes = history?.minutesPlayed ?: 0
+            val yellow = history?.yellowCards ?: 0
+            val red = history?.redCards ?: 0
+
+            val mergedPlayer = Player(
+                id = null,
                 teamId = teamId,
                 name = p.name,
                 matchesPlayed = p.matchesPlayed,
                 goals = p.goals,
                 assists = p.assists,
-                rating = p.rating
+                rating = p.rating,
+                minutesPlayed = minutes,
+                yellowCards = yellow,
+                redCards = red
             )
-        })
+
+            playersToSave.add(mergedPlayer)
+        }
+
+        playerRepository.saveAll(playersToSave)
     }
 
     fun getPlayersFromDb(teamId: String): List<Player> {
