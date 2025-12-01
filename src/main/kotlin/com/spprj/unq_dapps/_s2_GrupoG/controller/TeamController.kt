@@ -1,7 +1,6 @@
 package com.spprj.unq_dapps._s2_GrupoG.controller
 
 import com.spprj.unq_dapps._s2_GrupoG.config.TeamIdMapping
-import com.spprj.unq_dapps._s2_GrupoG.controller.dtos.TeamComparisonResultDTO
 import com.spprj.unq_dapps._s2_GrupoG.external.dto.UpcomingMatchDTO
 import com.spprj.unq_dapps._s2_GrupoG.external.footballdata.FootballDataService
 import com.spprj.unq_dapps._s2_GrupoG.model.Player
@@ -40,16 +39,39 @@ class TeamController(
     }
 
     @GetMapping("/compare")
-    @Operation(
-        summary = "Comparación de equipos",
-        description = "Devuelve métricas comparativas entre dos equipos usando estadísticas agregadas"
-    )
+    @Operation(summary = "Comparación de métricas entre dos equipos")
     fun compareTeams(
         @RequestParam teamA: String,
         @RequestParam teamB: String
-    ): ResponseEntity<TeamComparisonResultDTO> {
+    ): ResponseEntity<Any> {
 
-        val result = comparisonService.compareTeams(teamA, teamB)
-        return ResponseEntity.ok(result)
+        val teamAName = TeamIdMapping.whoScoredToFootballData.keys.find { it == teamA }
+            ?: return ResponseEntity.badRequest().body("Team A not found")
+
+        val teamBName = TeamIdMapping.whoScoredToFootballData.keys.find { it == teamB }
+            ?: return ResponseEntity.badRequest().body("Team B not found")
+
+        val comparison = comparisonService.compareTeams(teamA, teamB)   // ✔️ USAMOS EL ATRIBUTO
+
+        return ResponseEntity.ok(
+            mapOf(
+                "teamA" to teamA,
+                "teamB" to teamB,
+                "metrics" to comparison
+            )
+        )
     }
+
+
+    @GetMapping("/force-scrape/{teamId}")
+    @Operation(summary = "Fuerza el scrapping y actualización de jugadores del equipo")
+    fun forceScrape(@PathVariable teamId: String): ResponseEntity<String> {
+        return try {
+            playerService.populateDataBaseFromScrapperService(teamId)
+            ResponseEntity.ok("Scraping ejecutado correctamente para el equipo $teamId")
+        } catch (e: Exception) {
+            ResponseEntity.internalServerError().body("Error al ejecutar el scraping: ${e.message}")
+        }
+    }
+
 }

@@ -48,17 +48,10 @@ class TeamServiceImpl(
         val goalsPerMatch = if (matches == 0) 0.0 else goals.toDouble() / matches
         val assistsPerMatch = if (matches == 0) 0.0 else assists.toDouble() / matches
 
-        val avgMinutes = players.map { it.minutesPlayed ?: 0 }.average()
-        val avgYellows = players.map { it.yellowCards ?: 0 }.average()
-        val avgReds = players.map { it.redCards ?: 0 }.average()
-
         return mapOf(
             "averageRating" to averageRating,
             "goalsPerMatch" to goalsPerMatch,
             "assistsPerMatch" to assistsPerMatch,
-            "yellowCardsAvg" to avgYellows,
-            "redCardsAvg" to avgReds,
-            "minutesPlayedAvg" to avgMinutes
         )
     }
 }

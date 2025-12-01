@@ -16,51 +16,20 @@ class PlayerServiceImpl(
     @Transactional
     fun populateDataBaseFromScrapperService(teamId: String) {
 
-        val basePlayers: List<Player> = whoScoredScraper.getPlayersOfTeam(teamId)
+        val basePlayers = whoScoredScraper.getPlayersOfTeam(teamId)
 
         if (basePlayers.isEmpty()) {
+            println("⚠️ No players found for team $teamId")
             return
         }
 
-        // Limpio jugadores previos del equipo para evitar duplicados
-        val deleted = playerRepository.findByTeamId(teamId)
-        playerRepository.deleteAll(deleted)
+        // Borrar jugadores anteriores
+        playerRepository.deleteAll(playerRepository.findByTeamId(teamId))
 
-        val playersToSave = mutableListOf<Player>()
+        // Guardar jugadores scrapeados directamente
+        playerRepository.saveAll(basePlayers)
 
-        for (p in basePlayers) {
-
-            val playerNameSlug = p.name.lowercase()
-                .replace(" ", "-")
-                .replace(".", "")
-                .replace("'", "")
-
-            // Atención: no siempre coincide el id de WhoScored con el jugador.
-            // Si no tenés el ID del jugador, NO se puede scrapear la historia.
-            // Voy a intentar usar el name slug (tu endpoint lo usa así).
-            val history = whoScoredScraper.getPlayerHistory(p.id?.toString() ?: "", playerNameSlug)
-
-            val minutes = history?.minutesPlayed ?: 0
-            val yellow = history?.yellowCards ?: 0
-            val red = history?.redCards ?: 0
-
-            val mergedPlayer = Player(
-                id = null,
-                teamId = teamId,
-                name = p.name,
-                matchesPlayed = p.matchesPlayed,
-                goals = p.goals,
-                assists = p.assists,
-                rating = p.rating,
-                minutesPlayed = minutes,
-                yellowCards = yellow,
-                redCards = red
-            )
-
-            playersToSave.add(mergedPlayer)
-        }
-
-        playerRepository.saveAll(playersToSave)
+        println("✅ Saved ${basePlayers.size} players for team $teamId")
     }
 
     fun getPlayersFromDb(teamId: String): List<Player> {

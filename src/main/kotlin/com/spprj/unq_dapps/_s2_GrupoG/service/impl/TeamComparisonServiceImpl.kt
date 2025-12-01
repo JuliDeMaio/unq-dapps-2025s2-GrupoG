@@ -4,6 +4,7 @@ import com.spprj.unq_dapps._s2_GrupoG.controller.dtos.TeamComparisonResultDTO
 import com.spprj.unq_dapps._s2_GrupoG.controller.dtos.TeamMetricComparisonDTO
 import io.micrometer.core.instrument.MeterRegistry
 import org.springframework.stereotype.Service
+import java.util.Locale
 
 @Service
 class TeamComparisonServiceImpl(
@@ -32,16 +33,16 @@ class TeamComparisonServiceImpl(
             val bVal = metricsB[metric] ?: 0.0
 
             val better = when {
-                aVal > bVal -> "teamA"
-                bVal > aVal -> "teamB"
-                else -> "equal"
+                aVal > bVal -> teamA.name
+                bVal > aVal -> teamB.name
+                else -> "Iguales"
             }
 
             comparisons.add(
                 TeamMetricComparisonDTO(
                     metric = metric,
-                    teamA = aVal,
-                    teamB = bVal,
+                    teamA = aVal.round2(),
+                    teamB = bVal.round2(),
                     better = better
                 )
             )
@@ -53,4 +54,8 @@ class TeamComparisonServiceImpl(
             metrics = comparisons
         )
     }
+
+    fun Double.round2(): Double =
+        String.format(Locale.US, "%.2f", this).toDouble()
+
 }
