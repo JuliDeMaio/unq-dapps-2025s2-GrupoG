@@ -29,11 +29,7 @@ class WhoScoredScraper(
             WebDriverManager.chromedriver().setup()
             val options = ChromeOptions().apply {
                 addArguments("--disable-blink-features=AutomationControlled")
-                addArguments(
-                    "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-                            "AppleWebKit/537.36 (KHTML, like Gecko) " +
-                            "Chrome/140.0.7339.208 Safari/537.36"
-                )
+                addArguments("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
                 addArguments("--headless=new")
                 addArguments("--no-sandbox")
                 addArguments("--disable-dev-shm-usage")
@@ -58,57 +54,61 @@ class WhoScoredScraper(
         }
     }
 
-    @Suppress("ReplaceGetOrSet")
     fun getPlayersOfTeam(teamId: String): List<Player> {
         val url = "https://www.whoscored.com/teams/$teamId/show"
-        println("Opening team page: $url")
         driver.get(url)
 
         if (!isTestMode) {
             wait!!.until(ExpectedConditions.presenceOfElementLocated(By.id("team-squad-stats")))
         }
 
-        val rows: List<WebElement> = if (!isTestMode) {
-            wait!!.until<List<WebElement>?> {
-                val elements = driver.findElements(By.cssSelector("#team-squad-stats tbody tr")).toList()
-                if (elements.isNotEmpty()) elements else null
-            } ?: emptyList() // 👈 evita null devolviendo lista vacía
-        } else {
-            driver.findElements(By.cssSelector("#team-squad-stats tbody tr")).toList()
-        }
+        val rows = driver.findElements(
+            By.cssSelector("#team-squad-stats tbody tr")
+        ).toList()
 
         val players = mutableListOf<Player>()
-        println("Detects rows: ${rows.size}")
-
         val js = driver as JavascriptExecutor
 
         for (row in rows) {
             try {
-                val cells = row.findElements(By.tagName("td")).toList()
-                if (cells.isEmpty()) continue
+                val nameElement = row.findElement(By.cssSelector("td a"))
+                val name = (js.executeScript(INNER_TEXT_SCRIPT, nameElement) as String)
+                    .trim().replace(Regex("^\\d+\\s*"), "")
+                if (name.isBlank()) continue
 
-                val nameElement = cells[0].findElement(By.tagName("a"))
-                val playerName = (js.executeScript(INNER_TEXT_SCRIPT, nameElement) as String)
-                    .trim()
-                    .replace(Regex("^\\d+\\s*"), "")
-                if (playerName.isBlank()) continue
+                val link = nameElement.getAttribute("href")
+                val whoScoredId = Regex("""/players?/(\d+)/""", RegexOption.IGNORE_CASE)
+                    .find(link)?.groupValues?.get(1) ?: "0"
 
-                val matches = getCellText(js, cells.getOrNull(4)).toIntOrNull() ?: 0
-                val goals = getCellText(js, cells.getOrNull(6)).toIntOrNull() ?: 0
-                val assists = getCellText(js, cells.getOrNull(7)).toIntOrNull() ?: 0
-                val rating = getCellText(js, cells.lastOrNull()).replace(",", ".").toDoubleOrNull()
+                fun textByClass(css: String): String {
+                    val el = row.findElements(By.cssSelector("td.$css")).firstOrNull()
+                    return getCellText(js, el)
+                }
 
-                println("✅ $playerName → $matches PJ, $goals G, $assists A, $rating Rating")
+                val minutes = textByClass("minsPlayed").replace(",", "").toIntOrNull() ?: 0
+                val goals = textByClass("goal").toIntOrNull() ?: 0
+                val assists = textByClass("assistTotal").toIntOrNull() ?: 0
+                val yellow = textByClass("yellowCard").toIntOrNull() ?: 0
+                val red = textByClass("redCard").toIntOrNull() ?: 0
+                val rating = textByClass("rating").replace(",", ".").toDoubleOrNull()
+
+                val appsText = row.findElements(By.tagName("td"))
+                    .getOrNull(3)?.text ?: "0"
+                val apps = Regex("""\d+""").find(appsText)?.value?.toInt() ?: 0
 
                 players.add(
                     Player(
                         id = null,
                         teamId = teamId,
-                        name = playerName,
-                        matchesPlayed = matches,
+                        name = name,
+                        matchesPlayed = apps,
                         goals = goals,
                         assists = assists,
-                        rating = rating
+                        rating = rating,
+                        yellowCards = yellow,
+                        redCards = red,
+                        minutesPlayed = minutes,
+                        whoScoredId = whoScoredId
                     )
                 )
             } catch (e: Exception) {
@@ -116,14 +116,12 @@ class WhoScoredScraper(
             }
         }
 
-        println("Total extracted players: ${players.size}")
         return players
     }
 
-    @Suppress("ReplaceGetOrSet")
+
     fun getPlayerHistory(playerId: String, playerName: String): PlayerHistoryDTO? {
         val url = "https://www.whoscored.com/players/$playerId/history/$playerName"
-        println("📖 Opening player history page: $url")
         driver.get(url)
 
         if (!isTestMode) {
@@ -136,10 +134,7 @@ class WhoScoredScraper(
 
         val tbody = driver.findElement(By.cssSelector("#player-table-statistics-body"))
         val rows = tbody.findElements(By.tagName("tr")).toList()
-        if (rows.isEmpty()) {
-            println("⚠️ No rows found for player $playerId")
-            return null
-        }
+        if (rows.isEmpty()) return null
 
         val lastRow = rows.last()
         val js = driver as JavascriptExecutor
@@ -151,10 +146,7 @@ class WhoScoredScraper(
         }
 
         val cells = lastRow.findElements(By.tagName("td")).toList()
-        if (cells.size < 9) {
-            println("⚠️ Not enough columns for player $playerId")
-            return null
-        }
+        if (cells.size < 9) return null
 
         val appearances = cellText(cells.getOrNull(2)).replace(",", "").toIntOrNull() ?: 0
         val minutesPlayed = cellText(cells.getOrNull(3)).replace(",", "").toIntOrNull() ?: 0
@@ -164,7 +156,7 @@ class WhoScoredScraper(
         val redCards = cellText(cells.getOrNull(7)).replace(",", "").toIntOrNull() ?: 0
         val averageRating = cellText(cells.getOrNull(12)).replace(",", ".").toDoubleOrNull()
 
-        val dto = PlayerHistoryDTO(
+        return PlayerHistoryDTO(
             appearances = appearances,
             goals = goals,
             assists = assists,
@@ -173,8 +165,5 @@ class WhoScoredScraper(
             minutesPlayed = minutesPlayed,
             averageRating = averageRating
         )
-
-        println("✅ Historical stats for player $playerId → $dto")
-        return dto
     }
 }

@@ -15,30 +15,34 @@ class PlayerServiceImpl(
 
     @Transactional
     fun populateDataBaseFromScrapperService(teamId: String) {
-
         val players: List<Player> = whoScoredScraper.getPlayersOfTeam(teamId)
 
         if (players.isEmpty()) {
             return
         }
 
-        // Limpio jugadores previos del equipo para evitar duplicados
         val deleted = playerRepository.findByTeamId(teamId)
         playerRepository.deleteAll(deleted)
 
-        // Guardo nuevos jugadores en la base
-        val saved = playerRepository.saveAll(players.map { p ->
-            Player(
-                id = null, // JPA genera el ID
-                teamId = teamId,
-                name = p.name,
-                matchesPlayed = p.matchesPlayed,
-                goals = p.goals,
-                assists = p.assists,
-                rating = p.rating
-            )
-        })
+        playerRepository.saveAll(
+            players.map { p ->
+                Player(
+                    id = null,
+                    teamId = teamId,
+                    name = p.name,
+                    matchesPlayed = p.matchesPlayed,
+                    goals = p.goals,
+                    assists = p.assists,
+                    rating = p.rating,
+                    yellowCards = p.yellowCards,
+                    redCards = p.redCards,
+                    minutesPlayed = p.minutesPlayed,
+                    whoScoredId = p.whoScoredId
+                )
+            }
+        )
     }
+
 
     fun getPlayersFromDb(teamId: String): List<Player> {
         return playerRepository.findByTeamId(teamId)
