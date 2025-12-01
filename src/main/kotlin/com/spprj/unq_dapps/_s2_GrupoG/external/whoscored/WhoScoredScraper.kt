@@ -45,15 +45,21 @@ class WhoScoredScraper(
     private val wait: WebDriverWait? =
         if (isTestMode) null else WebDriverWait(driver, Duration.ofSeconds(30))
 
+    /** -------------------------------------------------------------
+     *  SAFE TEXT EXTRACTOR
+     * -------------------------------------------------------------- */
     private fun getCellText(js: JavascriptExecutor, cell: WebElement?): String {
         if (cell == null) return ""
         return try {
-            (js.executeScript(INNER_TEXT_SCRIPT, cell) as String).trim()
-        } catch (e: Exception) {
+            (js.executeScript(INNER_TEXT_SCRIPT, cell) as? String)?.trim() ?: ""
+        } catch (_: Exception) {
             ""
         }
     }
 
+    /** -------------------------------------------------------------
+     *  SCRAPE PLAYERS OF TEAM
+     * -------------------------------------------------------------- */
     fun getPlayersOfTeam(teamId: String): List<Player> {
         val url = "https://www.whoscored.com/teams/$teamId/show"
         driver.get(url)
@@ -62,24 +68,33 @@ class WhoScoredScraper(
             wait!!.until(ExpectedConditions.presenceOfElementLocated(By.id("team-squad-stats")))
         }
 
-        val rows = driver.findElements(
-            By.cssSelector("#team-squad-stats tbody tr")
-        ).toList()
-
+        val rows = driver.findElements(By.cssSelector("#team-squad-stats tbody tr")).toList()
         val players = mutableListOf<Player>()
         val js = driver as JavascriptExecutor
 
         for (row in rows) {
             try {
-                val nameElement = row.findElement(By.cssSelector("td a"))
-                val name = (js.executeScript(INNER_TEXT_SCRIPT, nameElement) as String)
-                    .trim().replace(Regex("^\\d+\\s*"), "")
-                if (name.isBlank()) continue
+                // 1) Obtener el primer TD
+                val firstTd = row.findElements(By.tagName("td")).firstOrNull() ?: continue
 
-                val link = nameElement.getAttribute("href")
+                // 2) Obtener el <a> dentro del TD
+                val nameAnchor = try {
+                    firstTd.findElement(By.tagName("a"))
+                } catch (_: Exception) {
+                    continue
+                }
+
+                // 3) Extraer nombre seguro
+                val rawName = getCellText(js, nameAnchor)
+                val name = rawName.replace(Regex("^\\d+\\s*"), "").trim()
+                if (name.isEmpty()) continue
+
+                // 4) Extraer ID WhoScored
+                val link = nameAnchor.getAttribute("href") ?: ""
                 val whoScoredId = Regex("""/players?/(\d+)/""", RegexOption.IGNORE_CASE)
                     .find(link)?.groupValues?.get(1) ?: "0"
 
+                // Utilidad para celdas que dependen de class
                 fun textByClass(css: String): String {
                     val el = row.findElements(By.cssSelector("td.$css")).firstOrNull()
                     return getCellText(js, el)
@@ -92,8 +107,8 @@ class WhoScoredScraper(
                 val red = textByClass("redCard").toIntOrNull() ?: 0
                 val rating = textByClass("rating").replace(",", ".").toDoubleOrNull()
 
-                val appsText = row.findElements(By.tagName("td"))
-                    .getOrNull(3)?.text ?: "0"
+                // Apps desde la columna 3
+                val appsText = row.findElements(By.tagName("td")).getOrNull(3)?.text ?: "0"
                 val apps = Regex("""\d+""").find(appsText)?.value?.toInt() ?: 0
 
                 players.add(
@@ -119,7 +134,9 @@ class WhoScoredScraper(
         return players
     }
 
-
+    /** -------------------------------------------------------------
+     *  SCRAPE PLAYER HISTORY
+     * -------------------------------------------------------------- */
     fun getPlayerHistory(playerId: String, playerName: String): PlayerHistoryDTO? {
         val url = "https://www.whoscored.com/players/$playerId/history/$playerName"
         driver.get(url)
@@ -138,23 +155,21 @@ class WhoScoredScraper(
 
         val lastRow = rows.last()
         val js = driver as JavascriptExecutor
-
-        fun cellText(cell: WebElement?) = try {
-            (js.executeScript(INNER_TEXT_SCRIPT, cell) as String).trim()
-        } catch (_: Exception) {
-            ""
-        }
-
         val cells = lastRow.findElements(By.tagName("td")).toList()
+
         if (cells.size < 9) return null
 
-        val appearances = cellText(cells.getOrNull(2)).replace(",", "").toIntOrNull() ?: 0
-        val minutesPlayed = cellText(cells.getOrNull(3)).replace(",", "").toIntOrNull() ?: 0
-        val goals = cellText(cells.getOrNull(4)).replace(",", "").toIntOrNull() ?: 0
-        val assists = cellText(cells.getOrNull(5)).replace(",", "").toIntOrNull() ?: 0
-        val yellowCards = cellText(cells.getOrNull(6)).replace(",", "").toIntOrNull() ?: 0
-        val redCards = cellText(cells.getOrNull(7)).replace(",", "").toIntOrNull() ?: 0
-        val averageRating = cellText(cells.getOrNull(12)).replace(",", ".").toDoubleOrNull()
+        fun cellText(index: Int): String {
+            return getCellText(js, cells.getOrNull(index))
+        }
+
+        val appearances = cellText(2).replace(",", "").toIntOrNull() ?: 0
+        val minutesPlayed = cellText(3).replace(",", "").toIntOrNull() ?: 0
+        val goals = cellText(4).replace(",", "").toIntOrNull() ?: 0
+        val assists = cellText(5).replace(",", "").toIntOrNull() ?: 0
+        val yellowCards = cellText(6).replace(",", "").toIntOrNull() ?: 0
+        val redCards = cellText(7).replace(",", "").toIntOrNull() ?: 0
+        val averageRating = cellText(12).replace(",", ".").toDoubleOrNull()
 
         return PlayerHistoryDTO(
             appearances = appearances,

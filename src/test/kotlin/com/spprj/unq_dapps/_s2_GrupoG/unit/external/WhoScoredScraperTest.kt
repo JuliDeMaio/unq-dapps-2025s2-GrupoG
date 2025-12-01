@@ -42,8 +42,32 @@ class WhoScoredScraperTest {
     @Test
     fun `02 - should return players correctly`() {
         val mockPlayers = listOf(
-            Player(id = 1, teamId = "26", name = "Lionel Messi", matchesPlayed = 10, goals = 8, assists = 5, rating = 9.2),
-            Player(id = 2, teamId = "26", name = "Di María", matchesPlayed = 9, goals = 3, assists = 4, rating = 8.4)
+            Player(
+                id = 1,
+                teamId = "26",
+                name = "Lionel Messi",
+                matchesPlayed = 10,
+                goals = 8,
+                assists = 5,
+                rating = 9.2,
+                yellowCards = 1,
+                redCards = 0,
+                minutesPlayed = 900,
+                whoScoredId = "123"
+            ),
+            Player(
+                id = 2,
+                teamId = "26",
+                name = "Di María",
+                matchesPlayed = 9,
+                goals = 3,
+                assists = 4,
+                rating = 8.4,
+                yellowCards = 0,
+                redCards = 0,
+                minutesPlayed = 720,
+                whoScoredId = "456"
+            )
         )
 
         doReturn(mockPlayers).`when`(scraper).getPlayersOfTeam("26")
@@ -107,8 +131,21 @@ class WhoScoredScraperTest {
     @Test
     fun `06 - should handle null ratings gracefully`() {
         val mockPlayers = listOf(
-            Player(id = 1, teamId = "26", name = "Unknown", matchesPlayed = 0, goals = 0, assists = 0, rating = null)
+            Player(
+                id = 1,
+                teamId = "26",
+                name = "Unknown",
+                matchesPlayed = 0,
+                goals = 0,
+                assists = 0,
+                rating = null,
+                yellowCards = 0,
+                redCards = 0,
+                minutesPlayed = 0,
+                whoScoredId = ""
+            )
         )
+
         doReturn(mockPlayers).`when`(scraper).getPlayersOfTeam("26")
 
         val result = scraper.getPlayersOfTeam("26")
@@ -137,25 +174,37 @@ class WhoScoredScraperTest {
 
     @Test
     fun `08 - getPlayersOfTeam should parse players from mocked elements`() {
-        val driver = mock(WebDriver::class.java, withSettings().extraInterfaces(JavascriptExecutor::class.java))
+
+        val driver = mock(
+            WebDriver::class.java,
+            withSettings().extraInterfaces(JavascriptExecutor::class.java)
+        )
         val js = driver as JavascriptExecutor
 
         val row = mock(WebElement::class.java)
+
+        val tdList = (0 until 9).map { mock(WebElement::class.java) }.toMutableList()
+
+        val tdName = tdList[0]
         val nameElement = mock(WebElement::class.java)
-        val tdName = mock(WebElement::class.java)
-        val tdList = listOf(
-            tdName, mock(WebElement::class.java), mock(WebElement::class.java),
-            mock(WebElement::class.java), mock(WebElement::class.java),
-            mock(WebElement::class.java), mock(WebElement::class.java), mock(WebElement::class.java)
-        )
+        `when`(tdName.findElement(By.tagName("a"))).thenReturn(nameElement)
+
+        `when`(driver.findElements(By.cssSelector("#team-squad-stats tbody tr")))
+            .thenReturn(listOf(row))
 
         `when`(row.findElements(By.tagName("td"))).thenReturn(tdList)
-        `when`(tdName.findElement(By.tagName("a"))).thenReturn(nameElement)
-        `when`(js.executeScript(anyString(), eq(nameElement))).thenReturn("Lionel Messi")
-        `when`(driver.findElements(By.cssSelector("#team-squad-stats tbody tr"))).thenReturn(listOf(row))
 
-        val scraperMock = WhoScoredScraper(driver, isTestMode = true)
-        val result = scraperMock.getPlayersOfTeam("26")
+        doAnswer { invocation ->
+            val cell = invocation.arguments[1] as WebElement
+
+            when (cell) {
+                nameElement -> "Lionel Messi"
+                else -> "0"   // JAMÁS null, siempre string válido
+            }
+        }.`when`(js).executeScript(anyString(), any(WebElement::class.java))
+
+        val scraper = WhoScoredScraper(driver, isTestMode = true)
+        val result = scraper.getPlayersOfTeam("26")
 
         assertTrue(result.any { it.name.contains("Messi") })
     }
@@ -209,11 +258,8 @@ class WhoScoredScraperTest {
     @Test
     fun `12 - should handle exception while processing row`() {
         val driver = mock(WebDriver::class.java, withSettings().extraInterfaces(JavascriptExecutor::class.java))
-        val js = driver as JavascriptExecutor
         val row = mock(WebElement::class.java)
-        val td = mock(WebElement::class.java)
 
-        // Forzar excepción al buscar celdas
         `when`(row.findElements(By.tagName("td"))).thenThrow(RuntimeException("boom"))
         `when`(driver.findElements(By.cssSelector("#team-squad-stats tbody tr"))).thenReturn(listOf(row))
 
@@ -247,6 +293,4 @@ class WhoScoredScraperTest {
         val result = method.invoke(scraper, js, null) as String
         assertEquals("", result)
     }
-
-
 }
