@@ -22,8 +22,11 @@ class UserController(
 
     @GetMapping
     @Operation(summary = "Obtener todos los usuarios")
-    @ApiResponse(responseCode = "401", description = "No autenticado: falta token o es inválido")
-    fun getAllUsers(): List<User> = userService.findAll()
+    fun getAllUsers(): ResponseEntity<List<User>> {
+        val users = userService.findAll()
+        return ResponseEntity.ok(users)
+    }
+
 
     @GetMapping("/{id}")
     @Operation(summary = "Obtener un usuario por ID")
