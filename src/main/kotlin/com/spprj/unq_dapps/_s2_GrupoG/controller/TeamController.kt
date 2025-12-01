@@ -1,11 +1,9 @@
 package com.spprj.unq_dapps._s2_GrupoG.controller
 
 import com.spprj.unq_dapps._s2_GrupoG.config.TeamIdMapping
-import com.spprj.unq_dapps._s2_GrupoG.controller.dtos.TeamMostDangerousPlayerDTO
 import com.spprj.unq_dapps._s2_GrupoG.external.dto.UpcomingMatchDTO
 import com.spprj.unq_dapps._s2_GrupoG.external.footballdata.FootballDataService
 import com.spprj.unq_dapps._s2_GrupoG.model.Player
-import com.spprj.unq_dapps._s2_GrupoG.service.impl.DangerScoreServiceImpl
 import com.spprj.unq_dapps._s2_GrupoG.service.impl.PlayerServiceImpl
 import com.spprj.unq_dapps._s2_GrupoG.service.impl.TeamComparisonServiceImpl
 import io.swagger.v3.oas.annotations.Operation
@@ -21,8 +19,7 @@ import org.springframework.web.bind.annotation.*
 class TeamController(
     private val playerService: PlayerServiceImpl,
     private val footballDataService: FootballDataService,
-    private val comparisonService: TeamComparisonServiceImpl,
-    private val dangerScoreService: DangerScoreServiceImpl
+    private val comparisonService: TeamComparisonServiceImpl
 ) {
 
     @GetMapping("/{teamId}/players")
@@ -65,6 +62,7 @@ class TeamController(
         )
     }
 
+
     @GetMapping("/force-scrape/{teamId}")
     @Operation(summary = "Fuerza el scrapping y actualización de jugadores del equipo")
     fun forceScrape(@PathVariable teamId: String): ResponseEntity<String> {
@@ -74,13 +72,6 @@ class TeamController(
         } catch (e: Exception) {
             ResponseEntity.internalServerError().body("Error al ejecutar el scraping: ${e.message}")
         }
-    }
-    @GetMapping("/{teamId}/most-dangerous-player")
-    fun getMostDangerousPlayer(@PathVariable teamId: String): ResponseEntity<Any> {
-        val result = dangerScoreService.getMostDangerousPlayer(teamId)
-            ?: return ResponseEntity.notFound().build()
-
-        return ResponseEntity.ok(result)
     }
 
 }
