@@ -69,7 +69,11 @@ class TeamControllerTest {
                 matchesPlayed = 10,
                 goals = 8,
                 assists = 5,
-                rating = 9.1
+                rating = 9.1,
+                yellowCards = 1,
+                redCards = 0,
+                minutesPlayed = 850,
+                whoScoredId = "12345"
             ),
             Player(
                 id = 2,
@@ -78,7 +82,11 @@ class TeamControllerTest {
                 matchesPlayed = 9,
                 goals = 3,
                 assists = 4,
-                rating = 8.4
+                rating = 8.4,
+                yellowCards = 0,
+                redCards = 0,
+                minutesPlayed = 700,
+                whoScoredId = "98765"
             )
         )
 
@@ -109,5 +117,4 @@ class TeamControllerTest {
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.length()").value(0))
     }
-
 }

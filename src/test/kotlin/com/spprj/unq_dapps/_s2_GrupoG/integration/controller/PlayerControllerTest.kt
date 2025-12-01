@@ -3,6 +3,7 @@ package com.spprj.unq_dapps._s2_GrupoG.integration.controller
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.spprj.unq_dapps._s2_GrupoG.controller.PlayerController
 import com.spprj.unq_dapps._s2_GrupoG.external.dto.PlayerHistoryDTO
+import com.spprj.unq_dapps._s2_GrupoG.service.impl.DangerScoreServiceImpl
 import com.spprj.unq_dapps._s2_GrupoG.service.impl.PlayerServiceImpl
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -23,6 +24,9 @@ class PlayerControllerTest {
 
     @Mock
     private lateinit var playerService: PlayerServiceImpl
+
+    @Mock
+    private lateinit var dangerScoreService: DangerScoreServiceImpl
 
     @InjectMocks
     private lateinit var playerController: PlayerController
@@ -72,9 +76,9 @@ class PlayerControllerTest {
     }
 
     @Test
-    fun `03 - should return 400 when player name missing`() {
+    fun `03 - should return 4xx when player name missing`() {
         mockMvc.perform(
-            get("/players/123/history/")
+            get("/players/123/history/") // no matchea el mapping → 404
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().is4xxClientError)
     }

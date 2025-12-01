@@ -17,8 +17,32 @@ class PlayerRepositoryTest {
     fun `01 - should return players by team id`() {
         val teamId = "26"
         val players = listOf(
-            Player(id = 1L, teamId = teamId, name = "Messi", matchesPlayed = 10, goals = 8, assists = 5, rating = 9.2),
-            Player(id = 2L, teamId = teamId, name = "Di María", matchesPlayed = 9, goals = 3, assists = 4, rating = 8.4)
+            Player(
+                id = 1L,
+                teamId = teamId,
+                name = "Messi",
+                matchesPlayed = 10,
+                goals = 8,
+                assists = 5,
+                rating = 9.2,
+                yellowCards = 3,
+                redCards = 0,
+                minutesPlayed = 900,
+                whoScoredId = "123"
+            ),
+            Player(
+                id = 2L,
+                teamId = teamId,
+                name = "Di María",
+                matchesPlayed = 9,
+                goals = 3,
+                assists = 4,
+                rating = 8.4,
+                yellowCards = 1,
+                redCards = 0,
+                minutesPlayed = 750,
+                whoScoredId = "456"
+            )
         )
 
         every { playerRepository.findByTeamId(teamId) } returns players
@@ -28,3 +52,4 @@ class PlayerRepositoryTest {
         assertEquals("Messi", result.first().name)
     }
 }
+
