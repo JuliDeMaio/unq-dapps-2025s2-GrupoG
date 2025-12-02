@@ -17,7 +17,11 @@ class PlayerTest {
             matchesPlayed = 10,
             goals = 8,
             assists = 5,
-            rating = 9.1
+            rating = 9.1,
+            yellowCards = 2,
+            redCards = 0,
+            minutesPlayed = 900,
+            whoScoredId = "12345"
         )
 
         assertEquals(1L, player.id)
@@ -27,5 +31,10 @@ class PlayerTest {
         assertEquals(8, player.goals)
         assertEquals(5, player.assists)
         assertEquals(9.1, player.rating)
+        assertEquals(2, player.yellowCards)
+        assertEquals(0, player.redCards)
+        assertEquals(900, player.minutesPlayed)
+        assertEquals("12345", player.whoScoredId)
     }
+
 }
