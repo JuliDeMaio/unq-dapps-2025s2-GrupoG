@@ -67,6 +67,8 @@ dependencies {
     testImplementation("com.h2database:h2")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation(kotlin("test"))
+	testImplementation("com.tngtech.archunit:archunit-junit5:1.3.0")
+
 }
 
 sonar {

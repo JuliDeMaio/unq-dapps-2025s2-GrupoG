@@ -42,10 +42,50 @@ class PlayerServiceImplTest {
     @Test
     fun `02 - should replace old players and save new ones`() {
         val teamId = "15"
-        val oldPlayers = listOf(Player(1L, teamId, "Old", 5, 1, 0, 6.0))
+
+        val oldPlayers = listOf(
+            Player(
+                id = 1L,
+                teamId = teamId,
+                name = "Old",
+                matchesPlayed = 5,
+                goals = 1,
+                assists = 0,
+                rating = 6.0,
+                yellowCards = 1,
+                redCards = 0,
+                minutesPlayed = 300,
+                whoScoredId = "old-1"
+            )
+        )
+
         val newPlayers = listOf(
-            Player(null, teamId, "Messi", 10, 8, 5, 9.2),
-            Player(null, teamId, "Di María", 9, 3, 4, 8.1)
+            Player(
+                id = null,
+                teamId = teamId,
+                name = "Messi",
+                matchesPlayed = 10,
+                goals = 8,
+                assists = 5,
+                rating = 9.2,
+                yellowCards = 2,
+                redCards = 0,
+                minutesPlayed = 900,
+                whoScoredId = "messi-1"
+            ),
+            Player(
+                id = null,
+                teamId = teamId,
+                name = "Di María",
+                matchesPlayed = 9,
+                goals = 3,
+                assists = 4,
+                rating = 8.1,
+                yellowCards = 1,
+                redCards = 0,
+                minutesPlayed = 700,
+                whoScoredId = "dimaria-1"
+            )
         )
 
         Mockito.`when`(whoScoredScraper.getPlayersOfTeam(teamId)).thenReturn(newPlayers)
@@ -61,7 +101,23 @@ class PlayerServiceImplTest {
     @Test
     fun `03 - should return players from DB`() {
         val teamId = "20"
-        val players = listOf(Player(1L, teamId, "Messi", 10, 8, 5, 9.2))
+
+        val players = listOf(
+            Player(
+                id = 1L,
+                teamId = teamId,
+                name = "Messi",
+                matchesPlayed = 10,
+                goals = 8,
+                assists = 5,
+                rating = 9.2,
+                yellowCards = 1,
+                redCards = 0,
+                minutesPlayed = 900,
+                whoScoredId = "messi-20"
+            )
+        )
+
         Mockito.`when`(playerRepository.findByTeamId(teamId)).thenReturn(players)
 
         val result = playerService.getPlayersFromDb(teamId)
@@ -74,6 +130,7 @@ class PlayerServiceImplTest {
     fun `04 - should get player history from scraper`() {
         val playerId = "123"
         val playerName = "messi"
+
         val history = PlayerHistoryDTO(
             appearances = 10,
             goals = 8,
@@ -92,5 +149,4 @@ class PlayerServiceImplTest {
         assertEquals(8, result?.goals)
         assertEquals(8.9, result?.averageRating)
     }
-
 }

@@ -32,6 +32,7 @@ class PlayerServiceImpl(
         println("✅ Saved ${basePlayers.size} players for team $teamId")
     }
 
+
     fun getPlayersFromDb(teamId: String): List<Player> {
         return playerRepository.findByTeamId(teamId)
     }
