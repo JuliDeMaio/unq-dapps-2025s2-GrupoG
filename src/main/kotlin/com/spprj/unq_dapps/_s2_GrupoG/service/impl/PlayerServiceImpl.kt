@@ -15,32 +15,21 @@ class PlayerServiceImpl(
 
     @Transactional
     fun populateDataBaseFromScrapperService(teamId: String) {
-        val players: List<Player> = whoScoredScraper.getPlayersOfTeam(teamId)
 
-        if (players.isEmpty()) {
+        val basePlayers = whoScoredScraper.getPlayersOfTeam(teamId)
+
+        if (basePlayers.isEmpty()) {
+            println("⚠️ No players found for team $teamId")
             return
         }
 
-        val deleted = playerRepository.findByTeamId(teamId)
-        playerRepository.deleteAll(deleted)
+        // Borrar jugadores anteriores
+        playerRepository.deleteAll(playerRepository.findByTeamId(teamId))
 
-        playerRepository.saveAll(
-            players.map { p ->
-                Player(
-                    id = null,
-                    teamId = teamId,
-                    name = p.name,
-                    matchesPlayed = p.matchesPlayed,
-                    goals = p.goals,
-                    assists = p.assists,
-                    rating = p.rating,
-                    yellowCards = p.yellowCards,
-                    redCards = p.redCards,
-                    minutesPlayed = p.minutesPlayed,
-                    whoScoredId = p.whoScoredId
-                )
-            }
-        )
+        // Guardar jugadores scrapeados directamente
+        playerRepository.saveAll(basePlayers)
+
+        println("✅ Saved ${basePlayers.size} players for team $teamId")
     }
 
 
