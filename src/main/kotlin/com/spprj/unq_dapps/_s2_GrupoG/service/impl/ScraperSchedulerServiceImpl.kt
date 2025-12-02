@@ -10,7 +10,7 @@ class ScraperSchedulerServiceImpl(
     private val teamRepository: TeamRepository
 ) {
 
-    @Scheduled(cron = "* * * * * *") // cada 4 horas
+    @Scheduled(cron = "0 0 */4 * * *") // cada 4 horas
     fun scheduledPopulate() {
         println("▶️ Executing scraping scheduler...")
 

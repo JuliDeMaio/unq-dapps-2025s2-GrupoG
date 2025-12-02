@@ -21,9 +21,8 @@ import org.springframework.web.bind.annotation.*
 class TeamController(
     private val playerService: PlayerServiceImpl,
     private val footballDataService: FootballDataService,
-    private val comparisonService: TeamComparisonServiceImpl
+    private val comparisonService: TeamComparisonServiceImpl,
     private val dangerScoreService: DangerScoreServiceImpl
-
 ) {
 
     @GetMapping("/{teamId}/players")
@@ -77,14 +76,11 @@ class TeamController(
             ResponseEntity.internalServerError().body("Error al ejecutar el scraping: ${e.message}")
         }
     }
-
-}
     @GetMapping("/{teamId}/most-dangerous-player")
     @Operation(summary = "Obtiene el jugador más peligroso del equipo")
     fun getMostDangerousPlayer(@PathVariable teamId: String): ResponseEntity<TeamMostDangerousPlayerDTO?> {
         val result = dangerScoreService.getMostDangerousPlayer(teamId)
         return ResponseEntity.ok(result)
     }
-
 
 }
