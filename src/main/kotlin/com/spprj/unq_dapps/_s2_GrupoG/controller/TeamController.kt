@@ -65,7 +65,6 @@ class TeamController(
         )
     }
 
-
     @GetMapping("/force-scrape/{teamId}")
     @Operation(summary = "Fuerza el scrapping y actualización de jugadores del equipo")
     fun forceScrape(@PathVariable teamId: String): ResponseEntity<String> {
@@ -77,9 +76,10 @@ class TeamController(
         }
     }
     @GetMapping("/{teamId}/most-dangerous-player")
-    @Operation(summary = "Obtiene el jugador más peligroso del equipo")
-    fun getMostDangerousPlayer(@PathVariable teamId: String): ResponseEntity<TeamMostDangerousPlayerDTO?> {
+    fun getMostDangerousPlayer(@PathVariable teamId: String): ResponseEntity<Any> {
         val result = dangerScoreService.getMostDangerousPlayer(teamId)
+            ?: return ResponseEntity.notFound().build()
+
         return ResponseEntity.ok(result)
     }
 

@@ -1,17 +1,20 @@
 package com.spprj.unq_dapps._s2_GrupoG.integration.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.spprj.unq_dapps._s2_GrupoG.controller.dtos.TeamMostDangerousPlayerDTO
 import com.spprj.unq_dapps._s2_GrupoG.external.footballdata.FootballDataService
 import com.spprj.unq_dapps._s2_GrupoG.model.Player
 import com.spprj.unq_dapps._s2_GrupoG.model.User
 import com.spprj.unq_dapps._s2_GrupoG.model.enum.Role
 import com.spprj.unq_dapps._s2_GrupoG.repositories.UserRepository
 import com.spprj.unq_dapps._s2_GrupoG.security.JwtTokenProvider
+import com.spprj.unq_dapps._s2_GrupoG.service.impl.DangerScoreServiceImpl
 import com.spprj.unq_dapps._s2_GrupoG.service.impl.PlayerServiceImpl
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.`when`
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
@@ -38,10 +41,9 @@ class TeamControllerTest {
     @Autowired lateinit var userRepository: UserRepository
     @Autowired lateinit var passwordEncoder: PasswordEncoder
     @Autowired lateinit var jwtTokenProvider: JwtTokenProvider
-    @Autowired lateinit var objectMapper: ObjectMapper
 
     @MockBean lateinit var playerService: PlayerServiceImpl
-    @MockBean lateinit var footballDataService: FootballDataService
+    @MockBean lateinit var dangerScoreService: DangerScoreServiceImpl
 
     private lateinit var token: String
 
@@ -117,4 +119,44 @@ class TeamControllerTest {
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.length()").value(0))
     }
+
+    @Test
+    fun `03 - should return most dangerous player of the team`() {
+
+        val teamId = "15"
+        val dto = TeamMostDangerousPlayerDTO(
+            teamName = "Chelsea",
+            mostDangerousPlayer = "Enzo Fernández",
+            dangerScore = 8.7
+        )
+
+        whenever(dangerScoreService.getMostDangerousPlayer(teamId)).thenReturn(dto)
+
+        mockMvc.perform(
+            get("/teams/$teamId/most-dangerous-player")   // ← ESTA ES LA URL CORRECTA
+                .header("Authorization", "Bearer $token")
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.teamName").value("Chelsea"))
+            .andExpect(jsonPath("$.mostDangerousPlayer").value("Enzo Fernández"))
+            .andExpect(jsonPath("$.dangerScore").value(8.7))
+    }
+
+
+    @Test
+    fun `04 - should return 404 when team has no dangerous players`() {
+        val teamId = "404"
+
+        whenever(dangerScoreService.getMostDangerousPlayer(teamId))
+            .thenReturn(null)
+
+        mockMvc.perform(
+            get("/teams/$teamId/most-dangerous-player")
+                .header("Authorization", "Bearer $token")
+        )
+            .andExpect(status().isNotFound)
+    }
+
+
+
 }
