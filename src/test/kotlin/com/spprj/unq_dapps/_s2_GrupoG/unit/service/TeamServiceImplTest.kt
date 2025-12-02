@@ -3,6 +3,7 @@ package com.spprj.unq_dapps._s2_GrupoG.unit.service
 import com.spprj.unq_dapps._s2_GrupoG.external.whoscored.WhoScoredScraper
 import com.spprj.unq_dapps._s2_GrupoG.model.Player
 import com.spprj.unq_dapps._s2_GrupoG.model.Team
+import com.spprj.unq_dapps._s2_GrupoG.repositories.PlayerRepository
 import com.spprj.unq_dapps._s2_GrupoG.repositories.TeamRepository
 import com.spprj.unq_dapps._s2_GrupoG.service.impl.TeamServiceImpl
 import org.junit.jupiter.api.Assertions.*
@@ -17,12 +18,15 @@ class TeamServiceImplTest {
     private lateinit var whoScoredScraper: WhoScoredScraper
     private lateinit var teamRepository: TeamRepository
     private lateinit var teamService: TeamServiceImpl
+    private lateinit var playerRepository: PlayerRepository
 
     @BeforeEach
     fun setup() {
         whoScoredScraper = Mockito.mock(WhoScoredScraper::class.java)
         teamRepository = Mockito.mock(TeamRepository::class.java)
-        teamService = TeamServiceImpl(whoScoredScraper, teamRepository)
+        playerRepository = Mockito.mock(PlayerRepository::class.java)
+
+        teamService = TeamServiceImpl(whoScoredScraper, teamRepository, playerRepository )
     }
 
     @Test

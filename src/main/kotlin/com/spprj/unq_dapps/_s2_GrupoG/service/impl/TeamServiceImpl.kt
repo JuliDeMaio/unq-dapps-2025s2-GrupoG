@@ -5,7 +5,6 @@ import com.spprj.unq_dapps._s2_GrupoG.model.Player
 import com.spprj.unq_dapps._s2_GrupoG.model.Team
 import com.spprj.unq_dapps._s2_GrupoG.repositories.PlayerRepository
 import com.spprj.unq_dapps._s2_GrupoG.repositories.TeamRepository
-import com.spprj.unq_dapps._s2_GrupoG.service.TeamService
 import org.springframework.stereotype.Service
 
 @Service
@@ -13,9 +12,9 @@ class TeamServiceImpl(
     private val whoScoredScraper: WhoScoredScraper,
     private val teamRepository: TeamRepository,
     private val playerRepository: PlayerRepository
-) : TeamService {
+) {
 
-    override fun playersOfTeam(teamId: String): List<Player> {
+    fun playersOfTeam(teamId: String): List<Player> {
         return whoScoredScraper.getPlayersOfTeam(teamId)
     }
 
