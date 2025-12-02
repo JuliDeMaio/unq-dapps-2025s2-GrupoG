@@ -12,8 +12,8 @@
 - Configuración de Monitoreo
 
 ### ⚽ **Funcionalidad**
-- Endpoint de métricas avanzadas
-- Endpoint de comparación de equipos
+- **Endpoint** de métricas avanzadas
+- **Endpoint** de comparación de equipos
 
 ---
 
