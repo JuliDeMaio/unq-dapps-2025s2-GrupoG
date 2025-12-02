@@ -1,6 +1,6 @@
 package com.spprj.unq_dapps._s2_GrupoG.aspect
 
-import com.spprj.unq_dapps._s2_GrupoG.service.UserService
+import com.spprj.unq_dapps._s2_GrupoG.service.impl.UserServiceImpl
 import org.aspectj.lang.JoinPoint
 import org.aspectj.lang.annotation.AfterReturning
 import org.aspectj.lang.annotation.Aspect
@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component
 @Aspect
 @Component
 class QueryLoggingAspect(
-    private val userService: UserService
-) {
+    private val userService: UserServiceImpl)
+ {
 
     @Pointcut("@annotation(org.springframework.web.bind.annotation.GetMapping) || " +
             "@annotation(org.springframework.web.bind.annotation.PostMapping) || " +

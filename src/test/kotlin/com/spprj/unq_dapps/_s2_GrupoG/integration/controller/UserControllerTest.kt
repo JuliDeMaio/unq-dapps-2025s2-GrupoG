@@ -6,7 +6,7 @@ import com.spprj.unq_dapps._s2_GrupoG.model.UserQueryLog
 import com.spprj.unq_dapps._s2_GrupoG.model.enum.Role
 import com.spprj.unq_dapps._s2_GrupoG.repositories.UserRepository
 import com.spprj.unq_dapps._s2_GrupoG.security.JwtTokenProvider
-import com.spprj.unq_dapps._s2_GrupoG.service.UserService
+import com.spprj.unq_dapps._s2_GrupoG.service.impl.UserServiceImpl
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -35,7 +35,7 @@ class UserControllerTest {
     @Autowired lateinit var passwordEncoder: PasswordEncoder
     @Autowired lateinit var userRepository: UserRepository
 
-    @MockBean lateinit var userService: UserService
+    @MockBean lateinit var userService: UserServiceImpl
     @MockBean lateinit var footballDataService: com.spprj.unq_dapps._s2_GrupoG.external.footballdata.FootballDataService
 
     private lateinit var token: String

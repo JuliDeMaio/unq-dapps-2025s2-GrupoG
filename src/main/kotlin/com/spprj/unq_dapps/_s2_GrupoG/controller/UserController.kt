@@ -1,7 +1,7 @@
 package com.spprj.unq_dapps._s2_GrupoG.controller
 
 import com.spprj.unq_dapps._s2_GrupoG.model.User
-import com.spprj.unq_dapps._s2_GrupoG.service.UserService
+import com.spprj.unq_dapps._s2_GrupoG.service.impl.UserServiceImpl
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
@@ -17,7 +17,7 @@ import java.time.LocalDate
 @SecurityRequirement(name = "bearerAuth")
 @ApiResponse(responseCode = "401", description = "No autenticado: falta token o es inválido")
 class UserController(
-    private val userService: UserService
+    private val userService: UserServiceImpl
 ) {
 
     @GetMapping

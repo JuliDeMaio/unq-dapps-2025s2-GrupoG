@@ -5,9 +5,9 @@ import com.spprj.unq_dapps._s2_GrupoG.model.User
 import com.spprj.unq_dapps._s2_GrupoG.model.UserQueryLog
 import com.spprj.unq_dapps._s2_GrupoG.repositories.UserQueryLogRepository
 import com.spprj.unq_dapps._s2_GrupoG.repositories.UserRepository
-import com.spprj.unq_dapps._s2_GrupoG.service.UserService
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 
 @Service
@@ -16,19 +16,21 @@ class UserServiceImpl(
     private val userQueryLogRepository: UserQueryLogRepository,
     private val passwordEncoder: PasswordEncoder,
     private val objectMapper: ObjectMapper
-) : UserService {
+) {
 
-    override fun findAll(): List<User> = userRepository.findAll()
+    fun findAll(): List<User> = userRepository.findAll()
 
-    override fun findById(id: Long): User? =
+    fun findById(id: Long): User? =
         userRepository.findById(id).orElse(null)
 
-    override fun save(user: User): User {
+    @Transactional
+    fun save(user: User): User {
         user.password = passwordEncoder.encode(user.password)
         return userRepository.save(user)
     }
 
-    override fun update(id: Long, user: User): User? {
+    @Transactional
+    fun update(id: Long, user: User): User? {
         val existing = userRepository.findById(id).orElse(null) ?: return null
         existing.name = user.name
         existing.email = user.email
@@ -36,14 +38,16 @@ class UserServiceImpl(
         return userRepository.save(existing)
     }
 
-    override fun delete(id: Long): Boolean {
+    @Transactional
+    fun delete(id: Long): Boolean {
         return if (userRepository.existsById(id)) {
             userRepository.deleteById(id)
             true
         } else false
     }
 
-    override fun saveQueryLog(
+    @Transactional
+    fun saveQueryLog(
         userId: Long,
         endpoint: String,
         method: String,
@@ -61,7 +65,7 @@ class UserServiceImpl(
         userQueryLogRepository.save(log)
     }
 
-    override fun getUserQueriesByDate(userId: Long, date: LocalDate): List<Map<String, Any?>> {
+    fun getUserQueriesByDate(userId: Long, date: LocalDate): List<Map<String, Any?>> {
         val logs = userQueryLogRepository.findByUserIdAndQueryDate(userId, date)
 
         return logs.map { log ->
@@ -79,9 +83,7 @@ class UserServiceImpl(
         return try {
             objectMapper.readValue(json, Any::class.java)
         } catch (_: Exception) {
-            json // si no es un JSON válido, lo devuelve como texto plano
+            json
         }
     }
-
-
 }
