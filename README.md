@@ -2,6 +2,19 @@
 
 **Proyecto de la materia _Desarrollo de Aplicaciones_ – Universidad Nacional de Quilmes, 2° semestre 2025**
 
+## 📝 Entrega 3 - Release Notes
+
+### ✅ **Core**
+
+- Creación de tests de arquitectura
+- Auditoria de Web-Services. Loguear <timestamp,user,operación/metodo, parámetros, tiempoDeEjecicion> de los servicios publicados
+- Configuración de métricas
+- Configuración de Monitoreo
+
+### ⚽ **Funcionalidad**
+- Endpoint de métricas avanzadas
+- Endpoint de comparación de equipos
+
 ---
 
 ## 📝 Entrega 2 - Release Notes
@@ -38,4 +51,7 @@
 
 ### ⚽ **Funcionalidad**
 - **Creación de usuario y ApiKEY** para autenticación  
-- **Endpoint** de jugadores de un equipo  
+- **Endpoint** de jugadores de un equipo 
+
+
+
