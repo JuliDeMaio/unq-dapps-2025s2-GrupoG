@@ -34,11 +34,14 @@ class PlayerController(
     fun getPlayerDangerScore(
         @PathVariable playerId: String,
         @PathVariable playerName: String
-    ): ResponseEntity<PlayerDangerScoreDTO?> {
+    ): ResponseEntity<PlayerDangerScoreDTO> {
 
         val result = dangerScoreService.calculateDangerScore(playerId, playerName)
+            ?: return ResponseEntity.notFound().build()
+
         return ResponseEntity.ok(result)
     }
+
 
 
 
