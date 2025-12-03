@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
+import com.spprj.unq_dapps._s2_GrupoG.controller.dtos.TeamMostDangerousPlayerDTO
+import com.spprj.unq_dapps._s2_GrupoG.service.impl.DangerScoreServiceImpl
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -19,7 +21,8 @@ import org.springframework.web.bind.annotation.*
 class TeamController(
     private val playerService: PlayerServiceImpl,
     private val footballDataService: FootballDataService,
-    private val comparisonService: TeamComparisonServiceImpl
+    private val comparisonService: TeamComparisonServiceImpl,
+    private val dangerScoreService: DangerScoreServiceImpl
 ) {
 
     @GetMapping("/{teamId}/players")
@@ -72,6 +75,14 @@ class TeamController(
         } catch (e: Exception) {
             ResponseEntity.internalServerError().body("Error al ejecutar el scraping: ${e.message}")
         }
+    }
+
+    @GetMapping("/{teamId}/most-dangerous-player")
+    fun getMostDangerousPlayer(@PathVariable teamId: String): ResponseEntity<Any> {
+        val result = dangerScoreService.getMostDangerousPlayer(teamId)
+            ?: return ResponseEntity.notFound().build()
+
+        return ResponseEntity.ok(result)
     }
 
 }
