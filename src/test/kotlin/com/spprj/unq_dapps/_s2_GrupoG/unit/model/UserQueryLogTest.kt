@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @ActiveProfiles("unitTest")
 class UserQueryLogTest {
@@ -12,6 +13,8 @@ class UserQueryLogTest {
     @Test
     fun `01 - should create UserQueryLog with correct values`() {
         val date = LocalDate.now()
+        val timestamp = LocalDateTime.now()
+
         val log = UserQueryLog(
             id = 1L,
             userId = 10L,
@@ -19,7 +22,10 @@ class UserQueryLogTest {
             method = "GET",
             requestBody = "{\"teamId\":\"26\"}",
             responseBody = "{\"status\":\"ok\"}",
-            queryDate = date
+            queryDate = date,
+            timestamp = timestamp,
+            pathParams = null,
+            queryParams = null
         )
 
         assertEquals(1L, log.id)
@@ -29,5 +35,8 @@ class UserQueryLogTest {
         assertEquals("{\"teamId\":\"26\"}", log.requestBody)
         assertEquals("{\"status\":\"ok\"}", log.responseBody)
         assertEquals(date, log.queryDate)
+        assertEquals(timestamp, log.timestamp)
+        assertNull(log.pathParams)
+        assertNull(log.queryParams)
     }
 }
