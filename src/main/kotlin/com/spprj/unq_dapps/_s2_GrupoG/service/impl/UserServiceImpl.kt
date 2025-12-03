@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Service
 class UserServiceImpl(
@@ -52,7 +53,9 @@ class UserServiceImpl(
         endpoint: String,
         method: String,
         requestBody: Any?,
-        responseBody: Any?
+        responseBody: Any?,
+        pathParams: Map<String, Any?>,
+        queryParams: Map<String, Any?>
     ) {
         val log = UserQueryLog(
             userId = userId,
@@ -60,7 +63,10 @@ class UserServiceImpl(
             method = method,
             requestBody = requestBody?.let { objectMapper.writeValueAsString(it) },
             responseBody = responseBody?.let { objectMapper.writeValueAsString(it) },
-            queryDate = LocalDate.now()
+            queryDate = LocalDate.now(),
+            timestamp = LocalDateTime.now(),
+            pathParams = objectMapper.writeValueAsString(pathParams),
+            queryParams = objectMapper.writeValueAsString(queryParams)
         )
         userQueryLogRepository.save(log)
     }
@@ -72,8 +78,11 @@ class UserServiceImpl(
             mapOf(
                 "endpoint" to log.endpoint,
                 "method" to log.method,
+                "timestamp" to log.timestamp,
+                "queryParams" to parseJsonSafely(log.queryParams),
+                "pathParams" to parseJsonSafely(log.pathParams),
                 "requestBody" to parseJsonSafely(log.requestBody),
-                "responseBody" to parseJsonSafely(log.responseBody)
+                "responseBody" to parseJsonSafely(log.responseBody),
             )
         }
     }
