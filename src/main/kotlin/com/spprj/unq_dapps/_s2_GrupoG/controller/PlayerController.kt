@@ -42,7 +42,4 @@ class PlayerController(
         return ResponseEntity.ok(result)
     }
 
-
-
-
 }

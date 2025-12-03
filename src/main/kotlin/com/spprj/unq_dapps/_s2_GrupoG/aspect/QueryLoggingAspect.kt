@@ -6,6 +6,9 @@ import org.aspectj.lang.annotation.AfterReturning
 import org.aspectj.lang.annotation.Aspect
 import org.aspectj.lang.annotation.Pointcut
 import org.springframework.stereotype.Component
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 
 @Aspect
 @Component
@@ -21,47 +24,74 @@ class QueryLoggingAspect(
         // Intencionalmente vacío: define el pointcut sin lógica adicional
     }
 
-    @AfterReturning(pointcut = "anyEndpoint()", returning = "result")
-    fun logQuery(joinPoint: JoinPoint, result: Any?) {
-        try {
-            val methodSignature = joinPoint.signature
-            val endpoint = "${methodSignature.declaringType.simpleName}.${methodSignature.name}"
+     @AfterReturning(pointcut = "anyEndpoint()", returning = "result")
+     fun logQuery(joinPoint: JoinPoint, result: Any?) {
+         try {
+             val methodSignature = joinPoint.signature
+             val endpoint = "${methodSignature.declaringType.simpleName}.${methodSignature.name}"
 
-            // Evitamos loguear el propio endpoint de consultas
-            if (endpoint.contains("UserController.getUserQueries")) {
-                return
-            }
+             // Evitamos loguear el propio endpoint de consultas
+             if (endpoint.contains("UserController.getUserQueries")) {
+                 return
+             }
 
-            val annotations = joinPoint.target::class.java.methods
-                .firstOrNull { it.name == joinPoint.signature.name }
-                ?.annotations
-                ?.map { it.annotationClass.simpleName } ?: emptyList()
+             val annotations = joinPoint.target::class.java.methods
+                 .firstOrNull { it.name == joinPoint.signature.name }
+                 ?.annotations
+                 ?.map { it.annotationClass.simpleName } ?: emptyList()
 
-            val httpMethod = when {
-                annotations.any { it?.contains("GetMapping") == true } -> "GET"
-                annotations.any { it?.contains("PostMapping") == true } -> "POST"
-                annotations.any { it?.contains("PutMapping") == true } -> "PUT"
-                annotations.any { it?.contains("DeleteMapping") == true } -> "DELETE"
-                else -> "UNKNOWN"
-            }
+             val httpMethod = when {
+                 annotations.any { it?.contains("GetMapping") == true } -> "GET"
+                 annotations.any { it?.contains("PostMapping") == true } -> "POST"
+                 annotations.any { it?.contains("PutMapping") == true } -> "PUT"
+                 annotations.any { it?.contains("DeleteMapping") == true } -> "DELETE"
+                 else -> "UNKNOWN"
+             }
 
-            val userId = 1L
-            val requestBody = joinPoint.args.firstOrNull()
-            val responseBody = result
+             // 🔥 NUEVO (lo mínimo indispensable)
+             val method = joinPoint.target::class.java.methods
+                 .firstOrNull { it.name == methodSignature.name }
 
-            userService.saveQueryLog(
-                userId = userId,
-                endpoint = endpoint,
-                method = httpMethod,
-                requestBody = requestBody,
-                responseBody = responseBody
-            )
+             val params = method?.parameters ?: emptyArray()
+             val args = joinPoint.args
 
-            println("✅ Query logged automatically: $endpoint [$httpMethod]")
-        } catch (e: Exception) {
-            println("⚠️ Error logging query: ${e.message}")
-        }
-    }
+             val pathParams = mutableMapOf<String, Any?>()
+             val queryParams = mutableMapOf<String, Any?>()
+             var requestBody: Any? = emptyMap<String, Any>()
+
+             for (i in params.indices) {
+                 val param = params[i]
+                 val value = args[i]
+
+                 when {
+                     param.isAnnotationPresent(PathVariable::class.java) ->
+                         pathParams[param.name ?: "param$i"] = value
+
+                     param.isAnnotationPresent(RequestParam::class.java) ->
+                         queryParams[param.name ?: "param$i"] = value
+
+                     param.isAnnotationPresent(RequestBody::class.java) ->
+                         requestBody = value
+                 }
+             }
+
+             // 🔥 Mantengo tu saveQueryLog
+             userService.saveQueryLog(
+                 userId = 1L,
+                 endpoint = endpoint,
+                 method = httpMethod,
+                 requestBody = requestBody,
+                 responseBody = result,
+                 pathParams = pathParams,
+                 queryParams = queryParams
+             )
+
+             println("✅ Query logged automatically: $endpoint [$httpMethod]")
+         } catch (e: Exception) {
+             println("⚠️ Error logging query: ${e.message}")
+         }
+     }
 
 
-}
+
+ }
