@@ -15,155 +15,143 @@ import java.util.*
 
 class TeamServiceImplTest {
 
-    private lateinit var whoScoredScraper: WhoScoredScraper
+    private lateinit var scraper: WhoScoredScraper
     private lateinit var teamRepository: TeamRepository
-    private lateinit var teamService: TeamServiceImpl
     private lateinit var playerRepository: PlayerRepository
+    private lateinit var service: TeamServiceImpl
 
     @BeforeEach
     fun setup() {
-        whoScoredScraper = Mockito.mock(WhoScoredScraper::class.java)
+        scraper = Mockito.mock(WhoScoredScraper::class.java)
         teamRepository = Mockito.mock(TeamRepository::class.java)
         playerRepository = Mockito.mock(PlayerRepository::class.java)
 
-        teamService = TeamServiceImpl(whoScoredScraper, teamRepository, playerRepository )
+        service = TeamServiceImpl(scraper, teamRepository, playerRepository)
     }
 
+    // ============================================================
+    // 01 - playersOfTeam
+    // ============================================================
+
     @Test
-    fun `01 - should return players of team`() {
-        val fakeTeamId = "10"
-        val fakePlayers = listOf(
-            Player(
-                id = 1L,
-                teamId = fakeTeamId,
-                name = "Messi",
-                matchesPlayed = 10,
-                goals = 8,
-                assists = 5,
-                rating = 9.3,
-                yellowCards = 2,
-                redCards = 0,
-                minutesPlayed = 900,
-                whoScoredId = "m10"
-            ),
-            Player(
-                id = 2L,
-                teamId = fakeTeamId,
-                name = "Di María",
-                matchesPlayed = 8,
-                goals = 3,
-                assists = 4,
-                rating = 8.1,
-                yellowCards = 1,
-                redCards = 0,
-                minutesPlayed = 700,
-                whoScoredId = "dm10"
-            )
+    fun `01 - should delegate playersOfTeam to scraper`() {
+        val teamId = "10"
+        val players = listOf(
+            Player(1, teamId, "A", 5, 1, 0, 7.5, 0, 0, 300, "p1")
         )
 
-        `when`(whoScoredScraper.getPlayersOfTeam(fakeTeamId)).thenReturn(fakePlayers)
+        `when`(scraper.getPlayersOfTeam(teamId)).thenReturn(players)
 
-        val result = teamService.playersOfTeam(fakeTeamId)
+        val result = service.playersOfTeam(teamId)
 
-        assertEquals(2, result.size)
-        assertEquals("Messi", result.first().name)
-        Mockito.verify(whoScoredScraper).getPlayersOfTeam(fakeTeamId)
+        assertEquals(1, result.size)
+        assertEquals("A", result[0].name)
+        Mockito.verify(scraper).getPlayersOfTeam(teamId)
     }
 
-    @Test
-    fun `02 - should calculate average rating correctly`() {
-        val fakeTeamId = "20"
-        val fakeTeam = Team(fakeTeamId, "Barcelona", 0.0)
+    // ============================================================
+    // 02 - getTeamById
+    // ============================================================
 
-        val fakePlayers = listOf(
-            Player(
-                id = 1L,
-                teamId = fakeTeamId,
-                name = "Messi",
-                matchesPlayed = 10,
-                goals = 8,
-                assists = 5,
-                rating = 9.0,
-                yellowCards = 0,
-                redCards = 0,
-                minutesPlayed = 1000,
-                whoScoredId = "m20"
-            ),
-            Player(
-                id = 2L,
-                teamId = fakeTeamId,
-                name = "Suárez",
-                matchesPlayed = 10,
-                goals = 5,
-                assists = 3,
-                rating = 8.0,
-                yellowCards = 0,
-                redCards = 0,
-                minutesPlayed = 900,
-                whoScoredId = "s20"
-            )
+    @Test
+    fun `02 - should return team with computed average rating`() {
+        val teamId = "20"
+        val baseTeam = Team(teamId, "Barcelona", 0.0)
+
+        val players = listOf(
+            Player(1, teamId, "Messi", 10, 5, 3, 9.0, 0, 0, 800, "p1"),
+            Player(2, teamId, "Xavi", 10, 1, 5, 7.0, 0, 0, 700, "p2")
         )
 
-        `when`(teamRepository.findById(fakeTeamId)).thenReturn(Optional.of(fakeTeam))
-        `when`(whoScoredScraper.getPlayersOfTeam(fakeTeamId)).thenReturn(fakePlayers)
+        `when`(teamRepository.findById(teamId)).thenReturn(Optional.of(baseTeam))
+        `when`(scraper.getPlayersOfTeam(teamId)).thenReturn(players)
 
-        val result = teamService.getTeamById(fakeTeamId)
+        val result = service.getTeamById(teamId)
 
         assertEquals("Barcelona", result.name)
-        assertEquals(8.5, result.rating ?: 0.0, 0.001)
+        assertEquals(8.0, result.rating!!, 0.001)
     }
 
     @Test
-    fun `03 - should return 0 rating when players have no rating`() {
-        val fakeTeamId = "22"
-        val fakeTeam = Team(fakeTeamId, "River", 0.0)
+    fun `03 - should return 0 rating when all players have null rating`() {
+        val teamId = "30"
+        val baseTeam = Team(teamId, "River", 0.0)
 
-        val fakePlayers = listOf(
-            Player(
-                id = 1L,
-                teamId = fakeTeamId,
-                name = "Player A",
-                matchesPlayed = 10,
-                goals = 0,
-                assists = 0,
-                rating = null,
-                yellowCards = 0,
-                redCards = 0,
-                minutesPlayed = 800,
-                whoScoredId = "pa22"
-            ),
-            Player(
-                id = 2L,
-                teamId = fakeTeamId,
-                name = "Player B",
-                matchesPlayed = 10,
-                goals = 0,
-                assists = 0,
-                rating = null,
-                yellowCards = 0,
-                redCards = 0,
-                minutesPlayed = 700,
-                whoScoredId = "pb22"
-            )
+        val players = listOf(
+            Player(1, teamId, "A", 10, 0, 0, null, 0, 0, 600, "1"),
+            Player(2, teamId, "B", 10, 0, 0, null, 0, 0, 500, "2")
         )
 
-        `when`(teamRepository.findById(fakeTeamId)).thenReturn(Optional.of(fakeTeam))
-        `when`(whoScoredScraper.getPlayersOfTeam(fakeTeamId)).thenReturn(fakePlayers)
+        `when`(teamRepository.findById(teamId)).thenReturn(Optional.of(baseTeam))
+        `when`(scraper.getPlayersOfTeam(teamId)).thenReturn(players)
 
-        val result = teamService.getTeamById(fakeTeamId)
+        val result = service.getTeamById(teamId)
 
-        assertEquals(0.0, result.rating ?: 0.0)
+        assertEquals(0.0, result.rating)
     }
 
     @Test
-    fun `04 - should throw exception when team not found`() {
-        val fakeTeamId = "99"
-        `when`(teamRepository.findById(fakeTeamId)).thenReturn(Optional.empty())
+    fun `04 - should throw when team not found`() {
+        val teamId = "999"
 
-        val exception = assertThrows(IllegalArgumentException::class.java) {
-            teamService.getTeamById(fakeTeamId)
+        `when`(teamRepository.findById(teamId)).thenReturn(Optional.empty())
+
+        val ex = assertThrows(IllegalArgumentException::class.java) {
+            service.getTeamById(teamId)
         }
 
-        assertTrue(exception.message!!.contains("No existe el equipo con ID"))
+        assertTrue(ex.message!!.contains("No existe el equipo"))
+    }
+
+    // ============================================================
+    // 03 - getTeamMetrics
+    // ============================================================
+
+    @Test
+    fun `05 - should return empty map when no players`() {
+        val teamId = "50"
+
+        `when`(playerRepository.findByTeamId(teamId)).thenReturn(emptyList())
+
+        val result = service.getTeamMetrics(teamId)
+
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `06 - should compute metrics correctly`() {
+        val teamId = "60"
+
+        val players = listOf(
+            Player(1, teamId, "A", 10, 4, 2, 8.0, 0, 0, 800, "1"),
+            Player(2, teamId, "B", 5, 1, 1, 6.0, 0, 0, 500, "2")
+        )
+
+        `when`(playerRepository.findByTeamId(teamId)).thenReturn(players)
+
+        val result = service.getTeamMetrics(teamId)
+
+        assertEquals(15, players.sumOf { it.matchesPlayed })
+        assertEquals(5.0 / 15.0, result["goalsPerMatch"])
+        assertEquals(3.0 / 15.0, result["assistsPerMatch"])
+        assertEquals(7.0, result["averageRating"])
+    }
+
+    @Test
+    fun `07 - should handle matches = 0 safely`() {
+        val teamId = "70"
+
+        val players = listOf(
+            Player(1, teamId, "A", 0, 0, 0, 8.0, 0, 0, 200, "1"),
+            Player(2, teamId, "B", 0, 0, 0, 6.0, 0, 0, 150, "2")
+        )
+
+        `when`(playerRepository.findByTeamId(teamId)).thenReturn(players)
+
+        val result = service.getTeamMetrics(teamId)
+
+        assertEquals(0.0, result["goalsPerMatch"])
+        assertEquals(0.0, result["assistsPerMatch"])
+        assertEquals(7.0, result["averageRating"])
     }
 }
