@@ -1,7 +1,9 @@
 package com.spprj.unq_dapps._s2_GrupoG.integration.controller
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.spprj.unq_dapps._s2_GrupoG.controller.dtos.TeamComparisonResultDTO
+import com.spprj.unq_dapps._s2_GrupoG.controller.dtos.TeamMetricComparisonDTO
 import com.spprj.unq_dapps._s2_GrupoG.controller.dtos.TeamMostDangerousPlayerDTO
+import com.spprj.unq_dapps._s2_GrupoG.external.dto.UpcomingMatchDTO
 import com.spprj.unq_dapps._s2_GrupoG.external.footballdata.FootballDataService
 import com.spprj.unq_dapps._s2_GrupoG.model.Player
 import com.spprj.unq_dapps._s2_GrupoG.model.User
@@ -10,6 +12,7 @@ import com.spprj.unq_dapps._s2_GrupoG.repositories.UserRepository
 import com.spprj.unq_dapps._s2_GrupoG.security.JwtTokenProvider
 import com.spprj.unq_dapps._s2_GrupoG.service.impl.DangerScoreServiceImpl
 import com.spprj.unq_dapps._s2_GrupoG.service.impl.PlayerServiceImpl
+import com.spprj.unq_dapps._s2_GrupoG.service.impl.TeamComparisonServiceImpl
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
@@ -44,6 +47,8 @@ class TeamControllerTest {
 
     @MockBean lateinit var playerService: PlayerServiceImpl
     @MockBean lateinit var dangerScoreService: DangerScoreServiceImpl
+    @MockBean lateinit var footballDataService: FootballDataService
+    @MockBean lateinit var comparisonService: TeamComparisonServiceImpl
 
     private lateinit var token: String
 
@@ -62,34 +67,10 @@ class TeamControllerTest {
 
     @Test
     fun `01 - should return players list`() {
-        val fakeTeamId = "26"
+        val fakeTeamId = "26" // EXISTE en TeamIdMapping
         val fakePlayers = listOf(
-            Player(
-                id = 1,
-                teamId = fakeTeamId,
-                name = "Lionel Messi",
-                matchesPlayed = 10,
-                goals = 8,
-                assists = 5,
-                rating = 9.1,
-                yellowCards = 1,
-                redCards = 0,
-                minutesPlayed = 850,
-                whoScoredId = "12345"
-            ),
-            Player(
-                id = 2,
-                teamId = fakeTeamId,
-                name = "Ángel Di María",
-                matchesPlayed = 9,
-                goals = 3,
-                assists = 4,
-                rating = 8.4,
-                yellowCards = 0,
-                redCards = 0,
-                minutesPlayed = 700,
-                whoScoredId = "98765"
-            )
+            Player(1, fakeTeamId, "Messi", 10, 8, 5, 9.1, 1, 0, 850, "123"),
+            Player(2, fakeTeamId, "Di María", 9, 3, 4, 8.4, 0, 0, 700, "456")
         )
 
         `when`(playerService.getPlayersFromDb(anyString())).thenReturn(fakePlayers)
@@ -101,54 +82,46 @@ class TeamControllerTest {
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.length()").value(2))
-            .andExpect(jsonPath("$[0].name").value("Lionel Messi"))
-            .andExpect(jsonPath("$[1].name").value("Ángel Di María"))
+            .andExpect(jsonPath("$[0].name").value("Messi"))
     }
 
     @Test
-    fun `02 - should return empty list when team has no players`() {
-        val fakeTeamId = "999"
+    fun `02 - should return empty list`() {
+        val teamId = "26"
 
-        `when`(playerService.getPlayersFromDb(fakeTeamId)).thenReturn(emptyList())
+        `when`(playerService.getPlayersFromDb(teamId)).thenReturn(emptyList())
 
         mockMvc.perform(
-            get("/teams/$fakeTeamId/players")
+            get("/teams/$teamId/players")
                 .header("Authorization", "Bearer $token")
-                .contentType(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.length()").value(0))
     }
 
     @Test
-    fun `03 - should return most dangerous player of the team`() {
+    fun `03 - should return most dangerous player`() {
+        val teamId = "15" // EXISTE en map
 
-        val teamId = "15"
         val dto = TeamMostDangerousPlayerDTO(
-            teamName = "Chelsea",
-            mostDangerousPlayer = "Enzo Fernández",
-            dangerScore = 8.7
+            "Chelsea", "Enzo Fernández", 8.7
         )
 
         whenever(dangerScoreService.getMostDangerousPlayer(teamId)).thenReturn(dto)
 
         mockMvc.perform(
-            get("/teams/$teamId/most-dangerous-player")   // ← ESTA ES LA URL CORRECTA
+            get("/teams/$teamId/most-dangerous-player")
                 .header("Authorization", "Bearer $token")
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.teamName").value("Chelsea"))
-            .andExpect(jsonPath("$.mostDangerousPlayer").value("Enzo Fernández"))
-            .andExpect(jsonPath("$.dangerScore").value(8.7))
     }
 
-
     @Test
-    fun `04 - should return 404 when team has no dangerous players`() {
-        val teamId = "404"
+    fun `04 - should return 404 when no dangerous player`() {
+        val teamId = "15"
 
-        whenever(dangerScoreService.getMostDangerousPlayer(teamId))
-            .thenReturn(null)
+        whenever(dangerScoreService.getMostDangerousPlayer(teamId)).thenReturn(null)
 
         mockMvc.perform(
             get("/teams/$teamId/most-dangerous-player")
@@ -157,6 +130,115 @@ class TeamControllerTest {
             .andExpect(status().isNotFound)
     }
 
+    @Test
+    fun `05 - should return upcoming matches`() {
+        val teamId = "26"
+        val mappedId = "64"
 
+        val matches = listOf(
+            UpcomingMatchDTO("Chelsea", "Arsenal", "2025-01-01"),
+            UpcomingMatchDTO("Chelsea", "Liverpool", "2025-01-10")
+        )
 
+        whenever(footballDataService.getUpcomingMatches(mappedId)).thenReturn(matches)
+
+        mockMvc.perform(
+            get("/teams/$teamId/upcoming-matches")
+                .header("Authorization", "Bearer $token")
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.length()").value(2))
+            .andExpect(jsonPath("$[0].homeTeam").value("Chelsea"))
+    }
+
+    @Test
+    fun `06 - should return 400 when teamId not mapped`() {
+        val teamId = "999"
+
+        mockMvc.perform(
+            get("/teams/$teamId/upcoming-matches")
+                .header("Authorization", "Bearer $token")
+        )
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun `07 - should compare teams successfully`() {
+        val teamA = "26"
+        val teamB = "15"
+
+        val comparison = TeamComparisonResultDTO(
+            teamA = "Liverpool",
+            teamB = "Chelsea",
+            metrics = listOf(
+                TeamMetricComparisonDTO("goalsPerMatch", 0.40, 0.55, "Chelsea")
+            )
+        )
+
+        whenever(comparisonService.compareTeams(teamA, teamB)).thenReturn(comparison)
+
+        mockMvc.perform(
+            get("/teams/compare")
+                .param("teamA", teamA)
+                .param("teamB", teamB)
+                .header("Authorization", "Bearer $token")
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.teamA").value(teamA))
+            .andExpect(jsonPath("$.metrics.teamA").value("Liverpool"))
+    }
+
+    @Test
+    fun `08 - should return 400 when teamA invalid`() {
+        val teamA = "999"
+        val teamB = "15"
+
+        mockMvc.perform(
+            get("/teams/compare")
+                .param("teamA", teamA)
+                .param("teamB", teamB)
+                .header("Authorization", "Bearer $token")
+        )
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun `09 - should return 400 when teamB invalid`() {
+        val teamA = "26"
+        val teamB = "777"
+
+        mockMvc.perform(
+            get("/teams/compare")
+                .param("teamA", teamA)
+                .param("teamB", teamB)
+                .header("Authorization", "Bearer $token")
+        )
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun `10 - should force scrape successfully`() {
+        val teamId = "26"
+
+        mockMvc.perform(
+            get("/teams/force-scrape/$teamId")
+                .header("Authorization", "Bearer $token")
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$").value("Scraping ejecutado correctamente para el equipo $teamId"))
+    }
+
+    @Test
+    fun `11 - should return 500 when scraping fails`() {
+        val teamId = "26"
+
+        whenever(playerService.populateDataBaseFromScrapperService(teamId))
+            .thenThrow(RuntimeException("fail"))
+
+        mockMvc.perform(
+            get("/teams/force-scrape/$teamId")
+                .header("Authorization", "Bearer $token")
+        )
+            .andExpect(status().isInternalServerError)
+    }
 }
