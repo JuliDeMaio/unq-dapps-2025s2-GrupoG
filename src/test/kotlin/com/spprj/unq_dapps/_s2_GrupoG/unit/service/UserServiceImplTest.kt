@@ -16,6 +16,7 @@ import org.mockito.Mockito.*
 import org.mockito.MockitoAnnotations
 import org.springframework.security.crypto.password.PasswordEncoder
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -129,10 +130,19 @@ class UserServiceImplTest {
         val date = LocalDate.now()
         val request = mapOf("req" to "value")
         val response = mapOf("res" to "value")
+
         `when`(objectMapper.writeValueAsString(request)).thenReturn("{\"req\":\"value\"}")
         `when`(objectMapper.writeValueAsString(response)).thenReturn("{\"res\":\"value\"}")
 
-        userService.saveQueryLog(1L, "/endpoint", "GET", request, response)
+        userService.saveQueryLog(
+            1L,
+            "/endpoint",
+            "GET",
+            request,
+            response,
+            emptyMap(),
+            emptyMap()
+        )
 
         val captor = ArgumentCaptor.forClass(UserQueryLog::class.java)
         verify(userQueryLogRepository).save(captor.capture())
@@ -148,6 +158,7 @@ class UserServiceImplTest {
 
     @Test
     fun `10 - should get user queries by date`() {
+        val today = LocalDate.now()
         val logs = listOf(
             UserQueryLog(
                 id = 1L,
@@ -156,17 +167,19 @@ class UserServiceImplTest {
                 method = "GET",
                 requestBody = "{}",
                 responseBody = "{}",
-                queryDate = LocalDate.now()
+                queryDate = today,
+                timestamp = LocalDateTime.now(),
+                pathParams = null,
+                queryParams = null
             )
         )
 
-        `when`(userQueryLogRepository.findByUserIdAndQueryDate(1L, LocalDate.now()))
+        `when`(userQueryLogRepository.findByUserIdAndQueryDate(1L, today))
             .thenReturn(logs)
 
-        val result = userService.getUserQueriesByDate(1L, LocalDate.now())
+        val result = userService.getUserQueriesByDate(1L, today)
 
         assertEquals(1, result.size)
-        verify(userQueryLogRepository).findByUserIdAndQueryDate(1L, LocalDate.now())
+        verify(userQueryLogRepository).findByUserIdAndQueryDate(1L, today)
     }
-
 }

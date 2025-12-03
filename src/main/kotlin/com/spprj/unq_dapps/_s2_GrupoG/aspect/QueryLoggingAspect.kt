@@ -21,7 +21,6 @@ class QueryLoggingAspect(
             "@annotation(org.springframework.web.bind.annotation.PutMapping) || " +
             "@annotation(org.springframework.web.bind.annotation.DeleteMapping)")
     fun anyEndpoint() {
-        // Intencionalmente vacío: define el pointcut sin lógica adicional
     }
 
      @AfterReturning(pointcut = "anyEndpoint()", returning = "result")
@@ -30,7 +29,6 @@ class QueryLoggingAspect(
              val methodSignature = joinPoint.signature
              val endpoint = "${methodSignature.declaringType.simpleName}.${methodSignature.name}"
 
-             // Evitamos loguear el propio endpoint de consultas
              if (endpoint.contains("UserController.getUserQueries")) {
                  return
              }
@@ -48,7 +46,6 @@ class QueryLoggingAspect(
                  else -> "UNKNOWN"
              }
 
-             // 🔥 NUEVO (lo mínimo indispensable)
              val method = joinPoint.target::class.java.methods
                  .firstOrNull { it.name == methodSignature.name }
 
@@ -75,7 +72,6 @@ class QueryLoggingAspect(
                  }
              }
 
-             // 🔥 Mantengo tu saveQueryLog
              userService.saveQueryLog(
                  userId = 1L,
                  endpoint = endpoint,
