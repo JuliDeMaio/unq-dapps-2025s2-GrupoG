@@ -83,11 +83,18 @@ class ArchitectureTest {
             .because("Service layer must be independent from web layer")
 
     @ArchTest
-    val `repositories should only be accessed by services` =
+    val `repositories should only be accessed by service, config or security` =
         classes()
             .that().resideInAPackage("..repositories..")
-            .should().onlyBeAccessed().byAnyPackage("..service..", "..config..")
-            .because("Repositories must be encapsulated by the service layer")
+            .should().onlyBeAccessed()
+            .byAnyPackage(
+                "..service..",
+                "..config..",
+                "..security.."
+            )
+            .because(
+                "Repositories must be encapsulated by the service layer or infrastructure like security"
+            )
 
     @ArchTest
     val `transactional methods should only exist in services` =
