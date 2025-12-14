@@ -1,6 +1,8 @@
 package com.spprj.unq_dapps._s2_GrupoG.service.impl
 
 import com.spprj.unq_dapps._s2_GrupoG.controller.dtos.MatchPredictionRequestDto
+import com.spprj.unq_dapps._s2_GrupoG.external.dto.UpcomingMatchDTO
+import com.spprj.unq_dapps._s2_GrupoG.external.footballdata.FootballDataService
 import com.spprj.unq_dapps._s2_GrupoG.model.MatchPredictionResult
 import com.spprj.unq_dapps._s2_GrupoG.model.Player
 import org.springframework.stereotype.Service
@@ -9,7 +11,8 @@ import kotlin.math.sqrt
 
 @Service
 class MatchServiceImpl(
-    private val teamService: TeamServiceImpl
+    private val teamService: TeamServiceImpl,
+    private val footballDataService: FootballDataService
 ) {
 
     fun predict(request: MatchPredictionRequestDto): MatchPredictionResult {
@@ -24,6 +27,10 @@ class MatchServiceImpl(
         val awayRating = calculateOriginalAverage(awayPlayers)
 
         return calculateProbabilities(homeTeam.name, awayTeam.name, homeRating, awayRating)
+    }
+
+    fun getUpcomingMatches(teamIdMap: String): List<UpcomingMatchDTO> {
+        return footballDataService.getUpcomingMatches(teamIdMap)
     }
 
     private fun calculateOriginalAverage(players: List<Player>): Double {

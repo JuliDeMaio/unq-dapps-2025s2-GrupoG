@@ -1,6 +1,7 @@
 package com.spprj.unq_dapps._s2_GrupoG.service.impl
 
 import com.spprj.unq_dapps._s2_GrupoG.repositories.TeamRepository
+import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
@@ -10,22 +11,24 @@ class ScraperSchedulerServiceImpl(
     private val teamRepository: TeamRepository
 ) {
 
-    @Scheduled(cron = "0 0 */4 * * *") // cada 4 horas
+    private val logger = LoggerFactory.getLogger(ScraperSchedulerServiceImpl::class.java)
+
+    @Scheduled(cron = "0 0 */4 * * *")
     fun scheduledPopulate() {
-        println("▶️ Executing scraping scheduler...")
+        logger.info("Executing scraping scheduler...")
 
         val teams = teamRepository.findAll()
-        println("📌 Founded ${teams.size} teams at database")
+        logger.info("Founded {} teams at database", teams.size)
 
         teams.forEach { team ->
-            println("⚽ Scraping team ${team.name} (${team.id})")
+            logger.info("Scraping team {} ({})", team.name, team.id)
             try {
                 playerService.populateDataBaseFromScrapperService(team.id)
             } catch (e: Exception) {
-                println("❌ Error at scrapping team ${team.name}: ${e.message}")
+                logger.error("Error at scrapping team {}", team.name, e)
             }
         }
 
-        println("✅ Scheduler finished")
+        logger.info("Scheduler finished")
     }
 }

@@ -62,4 +62,53 @@ class ArchitectureTest {
     .should().haveSimpleNameEndingWith("Repository")
     .because("Repository naming must remain recognizable and consistent")
 
+    @ArchTest
+    val `controllers must not depend on repositories or external services` =
+        noClasses()
+            .that().areAnnotatedWith(RestController::class.java)
+            .should().dependOnClassesThat().resideInAnyPackage(
+                "..repositories..",
+                "..external.client..",
+                "..external.service.."
+            )
+            .because(
+                "Controllers should delegate all business logic and external access to services"
+            )
+
+    @ArchTest
+    val `services must not depend on controllers` =
+        noClasses()
+            .that().resideInAPackage("..service..")
+            .should().dependOnClassesThat().areAnnotatedWith(RestController::class.java)
+            .because("Service layer must be independent from web layer")
+
+    @ArchTest
+    val `repositories should only be accessed by services` =
+        classes()
+            .that().resideInAPackage("..repositories..")
+            .should().onlyBeAccessed().byAnyPackage("..service..", "..config..")
+            .because("Repositories must be encapsulated by the service layer")
+
+    @ArchTest
+    val `transactional methods should only exist in services` =
+        methods()
+            .that().areAnnotatedWith(Transactional::class.java)
+            .should().beDeclaredInClassesThat().areAnnotatedWith(Service::class.java)
+            .because("Transactions must be handled in the service layer")
+
+    @ArchTest
+    val `controllers should not throw generic exceptions` =
+        methods()
+            .that().areDeclaredInClassesThat().areAnnotatedWith(RestController::class.java)
+            .should().notDeclareThrowableOfType(Exception::class.java)
+            .because("Controllers should handle errors via exceptions handlers or services")
+
+    @ArchTest
+    val `configuration classes should not depend on services` =
+        noClasses()
+            .that().areAnnotatedWith(org.springframework.context.annotation.Configuration::class.java)
+            .should().dependOnClassesThat().areAnnotatedWith(Service::class.java)
+            .because("Configuration classes should only configure beans, not use business logic")
+
+
 }

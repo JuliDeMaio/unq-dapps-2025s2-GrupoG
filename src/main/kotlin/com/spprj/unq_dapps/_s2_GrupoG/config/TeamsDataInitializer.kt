@@ -2,12 +2,15 @@ package com.spprj.unq_dapps._s2_GrupoG.config
 
 import com.spprj.unq_dapps._s2_GrupoG.model.Team
 import com.spprj.unq_dapps._s2_GrupoG.repositories.TeamRepository
+import org.slf4j.LoggerFactory
 import org.springframework.boot.CommandLineRunner
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
 class TeamsDataInitializer {
+
+    private val logger = LoggerFactory.getLogger(TeamsDataInitializer::class.java)
 
     @Bean
     fun initTeams(teamRepository: TeamRepository) = CommandLineRunner {
@@ -34,10 +37,11 @@ class TeamsDataInitializer {
                 Team("163", "Sheffield United"),
                 Team("161", "Wolves")
             )
+
             teamRepository.saveAll(teams)
-            println("✅ ${teams.size} teams were inserted into the database")
+            logger.info("{} teams were inserted into the database", teams.size)
         } else {
-            println("ℹ️ Database already has data, no duplicates were inserted")
+            logger.info("Database already has data, no duplicates were inserted")
         }
     }
 }

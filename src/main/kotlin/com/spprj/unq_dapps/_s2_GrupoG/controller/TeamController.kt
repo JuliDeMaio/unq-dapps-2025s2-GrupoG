@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import com.spprj.unq_dapps._s2_GrupoG.controller.dtos.TeamMostDangerousPlayerDTO
 import com.spprj.unq_dapps._s2_GrupoG.service.impl.DangerScoreServiceImpl
+import com.spprj.unq_dapps._s2_GrupoG.service.impl.MatchServiceImpl
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -20,7 +21,7 @@ import org.springframework.web.bind.annotation.*
 @SecurityRequirement(name = "bearerAuth")
 class TeamController(
     private val playerService: PlayerServiceImpl,
-    private val footballDataService: FootballDataService,
+    private val matchServiceImpl: MatchServiceImpl,
     private val comparisonService: TeamComparisonServiceImpl,
     private val dangerScoreService: DangerScoreServiceImpl
 ) {
@@ -34,10 +35,10 @@ class TeamController(
 
     @GetMapping("/{teamId}/upcoming-matches")
     fun getUpcomingMatches(@PathVariable teamId: String): ResponseEntity<List<UpcomingMatchDTO>> {
-        val fdId = TeamIdMapping.whoScoredToFootballData[teamId]
+        val teamIdMap = TeamIdMapping.whoScoredToFootballData[teamId]
             ?: return ResponseEntity.badRequest().build()
 
-        val matches = footballDataService.getUpcomingMatches(fdId)
+        val matches = matchServiceImpl.getUpcomingMatches(teamIdMap)
         return ResponseEntity.ok(matches)
     }
 

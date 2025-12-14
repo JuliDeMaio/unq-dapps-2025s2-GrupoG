@@ -11,6 +11,7 @@ import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.support.ui.ExpectedConditions
 import org.openqa.selenium.support.ui.WebDriverWait
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.time.Duration
 
@@ -19,6 +20,8 @@ class WhoScoredScraper(
     private val customDriver: WebDriver? = null,
     private val isTestMode: Boolean = false
 ) {
+
+    private val logger = LoggerFactory.getLogger(WhoScoredScraper::class.java)
 
     companion object {
         private const val INNER_TEXT_SCRIPT = "return arguments[0].innerText;"
@@ -127,7 +130,7 @@ class WhoScoredScraper(
                     )
                 )
             } catch (e: Exception) {
-                println("Error processing row: ${e.message}")
+                logger.warn("Error processing row for team {}: {}", teamId, e.message)
             }
         }
 

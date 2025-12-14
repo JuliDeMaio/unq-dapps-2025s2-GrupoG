@@ -1,6 +1,7 @@
 package com.spprj.unq_dapps._s2_GrupoG.unit.service
 
 import com.spprj.unq_dapps._s2_GrupoG.controller.dtos.MatchPredictionRequestDto
+import com.spprj.unq_dapps._s2_GrupoG.external.footballdata.FootballDataService
 import com.spprj.unq_dapps._s2_GrupoG.model.Player
 import com.spprj.unq_dapps._s2_GrupoG.model.Team
 import com.spprj.unq_dapps._s2_GrupoG.service.impl.MatchServiceImpl
@@ -16,12 +17,13 @@ class MatchServiceImplTest {
 
     private lateinit var teamService: TeamServiceImpl
     private lateinit var matchService: MatchServiceImpl
+    private lateinit var footballDataService: FootballDataService
 
     @BeforeEach
     fun setup() {
         MockitoAnnotations.openMocks(this)
         teamService = Mockito.mock(TeamServiceImpl::class.java)
-        matchService = MatchServiceImpl(teamService)
+        matchService = MatchServiceImpl(teamService, footballDataService)
     }
 
     private fun buildPlayer(teamId: String, name: String, rating: Double): Player {
