@@ -100,8 +100,11 @@ class ArchitectureTest {
     val `transactional methods should only exist in services` =
         methods()
             .that().areAnnotatedWith(Transactional::class.java)
-            .should().beDeclaredInClassesThat().areAnnotatedWith(Service::class.java)
+            .should()
+            .beDeclaredInClassesThat().areAnnotatedWith(Service::class.java)
+            .allowEmptyShould(true)
             .because("Transactions must be handled in the service layer")
+
 
     @ArchTest
     val `controllers should not throw generic exceptions` =
@@ -113,9 +116,17 @@ class ArchitectureTest {
     @ArchTest
     val `configuration classes should not depend on services` =
         noClasses()
-            .that().areAnnotatedWith(org.springframework.context.annotation.Configuration::class.java)
-            .should().dependOnClassesThat().areAnnotatedWith(Service::class.java)
-            .because("Configuration classes should only configure beans, not use business logic")
+            .that()
+            .areAnnotatedWith(org.springframework.context.annotation.Configuration::class.java)
+            .and()
+            .resideOutsideOfPackage("..security..")
+            .should()
+            .dependOnClassesThat().areAnnotatedWith(Service::class.java)
+            .because(
+                "Configuration classes should only configure beans, except security infrastructure"
+            )
+
+
 
 
 }

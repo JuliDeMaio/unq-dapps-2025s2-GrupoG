@@ -23,6 +23,7 @@ class MatchServiceImplTest {
     fun setup() {
         MockitoAnnotations.openMocks(this)
         teamService = Mockito.mock(TeamServiceImpl::class.java)
+        footballDataService = Mockito.mock(FootballDataService::class.java)
         matchService = MatchServiceImpl(teamService, footballDataService)
     }
 
