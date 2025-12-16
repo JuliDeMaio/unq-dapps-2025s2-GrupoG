@@ -26,6 +26,8 @@ class QueryLoggingAspect(
                 "@annotation(org.springframework.web.bind.annotation.DeleteMapping)"
     )
     fun anyEndpoint() {}
+    // Pointcut method intentionally empty.
+    // It serves as a reusable marker for HTTP endpoints intercepted by aspects.
 
     @AfterReturning(pointcut = "anyEndpoint()", returning = "result")
     fun logQuery(joinPoint: JoinPoint, result: Any?) {

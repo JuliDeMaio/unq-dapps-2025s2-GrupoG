@@ -17,7 +17,7 @@ class ScraperSchedulerServiceImpl(
     fun scheduledPopulate() {
         logger.info("Executing scraping scheduler...")
 
-        val teams = teamRepository.findAll()
+        val teams = teamRepository.findAll().toList()
         logger.info("Founded {} teams at database", teams.size)
 
         teams.forEach { team ->

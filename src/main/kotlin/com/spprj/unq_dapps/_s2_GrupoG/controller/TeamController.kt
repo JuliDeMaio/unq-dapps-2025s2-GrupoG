@@ -2,7 +2,6 @@ package com.spprj.unq_dapps._s2_GrupoG.controller
 
 import com.spprj.unq_dapps._s2_GrupoG.config.TeamIdMapping
 import com.spprj.unq_dapps._s2_GrupoG.external.dto.UpcomingMatchDTO
-import com.spprj.unq_dapps._s2_GrupoG.external.footballdata.FootballDataService
 import com.spprj.unq_dapps._s2_GrupoG.model.Player
 import com.spprj.unq_dapps._s2_GrupoG.service.impl.PlayerServiceImpl
 import com.spprj.unq_dapps._s2_GrupoG.service.impl.TeamComparisonServiceImpl
@@ -10,7 +9,6 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
-import com.spprj.unq_dapps._s2_GrupoG.controller.dtos.TeamMostDangerousPlayerDTO
 import com.spprj.unq_dapps._s2_GrupoG.service.impl.DangerScoreServiceImpl
 import com.spprj.unq_dapps._s2_GrupoG.service.impl.MatchServiceImpl
 import org.springframework.web.bind.annotation.*
@@ -55,7 +53,7 @@ class TeamController(
         val teamBName = TeamIdMapping.whoScoredToFootballData.keys.find { it == teamB }
             ?: return ResponseEntity.badRequest().body("Team B not found")
 
-        val comparison = comparisonService.compareTeams(teamA, teamB)   // ✔️ USAMOS EL ATRIBUTO
+        val comparison = comparisonService.compareTeams(teamA, teamB)
 
         return ResponseEntity.ok(
             mapOf(
